@@ -18,9 +18,17 @@ export async function GET() {
   }
 
   const odList = await prisma.oDApplication.findMany({
-    where: { studentId: student.id },
-    orderBy: { createdAt: "desc" },
-  });
+  where: { studentId: student.id },
+  orderBy: { createdAt: "desc" },
+  include: {
+    faculty: {
+      select: {
+        name: true,
+      },
+    },
+  },
+});
+
 
   return NextResponse.json({ odList });
 }

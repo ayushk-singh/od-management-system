@@ -1,100 +1,143 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import {
+  useReactTable,
+  getCoreRowModel,
+  getFilteredRowModel,
+  flexRender,
+} from "@tanstack/react-table";
 import { useEffect, useState } from "react";
-import { format } from "date-fns";
-
-type OdApplication = {
-  id: string;
-  dateFrom: string;
-  dateTo: string;
-  totalDays: number;
-  reason: string;
-  location: string;
-  status: string;
-};
+import { getColumns, OdApplication } from "./column"; // adjust import
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
+import { EditOdDialog } from "@/components/dashboard/student/edit-od-dialog";
 
 export default function MyApplications() {
-  const [odList, setOdList] = useState<OdApplication[]>([]);
+  const [data, setData] = useState<OdApplication[]>([]);
   const [loading, setLoading] = useState(true);
+  const [globalFilter, setGlobalFilter] = useState("");
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editData, setEditData] = useState<OdApplication | null>(null);
 
   useEffect(() => {
-    const fetchHistory = async () => {
+    const fetchData = async () => {
       const res = await fetch("/api/od/my-applications");
-      const data = await res.json();
-      setOdList(data.odList || []);
+      const json = await res.json();
+      setData(json.odList || []);
       setLoading(false);
     };
-    fetchHistory();
+    fetchData();
   }, []);
 
   const handleDelete = async (id: string) => {
-    const confirmed = confirm("Are you sure you want to delete this OD?");
-    if (!confirmed) return;
+    try {
+      const res = await fetch(`/api/od/${id}`, {
+        method: "DELETE",
+      });
 
-    const res = await fetch(`/api/od/${id}`, {
-      method: "DELETE",
-    });
+      const json = await res.json();
 
-    if (res.ok) {
-      setOdList((prev) => prev.filter((od) => od.id !== id));
+      if (!res.ok) {
+        throw new Error(json.error || "Failed to delete");
+      }
+
+      // Remove from local state only after successful deletion
+      setData((prev) => prev.filter((od) => od.id !== id));
+      console.log("Deleted:", id);
+    } catch (error) {
+      console.error("Delete failed:", error);
+      alert(
+        "Failed to delete OD application. Make sure it's in PENDING status."
+      );
     }
   };
 
-  return (
-    <div className="space-y-4">
-      {loading ? (
-        <p>Loading...</p>
-      ) : odList.length === 0 ? (
-        <p>No OD applications found.</p>
-      ) : (
-        odList.map((od) => (
-          <Card key={od.id}>
-            <CardContent className="p-4 space-y-2">
-              <div className="text-sm text-muted-foreground">
-                {format(new Date(od.dateFrom), "PPP")} →{" "}
-                {format(new Date(od.dateTo), "PPP")} ({od.totalDays} days)
-              </div>
-              <div>
-                <b>Location:</b> {od.location}
-              </div>
-              <div>
-                <b>Reason:</b> {od.reason}
-              </div>
-              <div>
-                <b>Status:</b>{" "}
-                <span
-                  className={`${
-                    od.status === "PENDING"
-                      ? "text-yellow-600"
-                      : od.status === "APPROVED"
-                      ? "text-green-600"
-                      : "text-red-600"
-                  }`}
-                >
-                  {od.status}
-                </span>
-              </div>
+  const handleEdit = (id: string) => {
+    const target = data.find((d) => d.id === id);
+    if (target) {
+      setEditData(target);
+      setEditDialogOpen(true);
+    }
+  };
 
-              {od.status === "PENDING" && (
-                <div className="flex gap-2 pt-2">
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => handleDelete(od.id)}
-                  >
-                    Delete
-                  </Button>
-                  <Button variant="outline" size="sm" disabled>
-                    Edit (TBD)
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        ))
-      )}
-    </div>
+  const handleEditSubmit = async (updated: OdApplication) => {
+    // call your API
+    await fetch(`/api/od/${updated.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(updated),
+    });
+
+    // update local state
+    setData((prev) => prev.map((d) => (d.id === updated.id ? updated : d)));
+    setEditDialogOpen(false);
+  };
+
+  const columns = getColumns(handleDelete, handleEdit);
+
+  const table = useReactTable({
+    data,
+    columns,
+    state: { globalFilter },
+    onGlobalFilterChange: setGlobalFilter,
+    globalFilterFn: "includesString",
+    getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+  });
+
+  if (loading) return <p>Loading...</p>;
+
+  return (
+    <>
+      <div className="space-y-4">
+        <Input
+          placeholder="Search..."
+          value={globalFilter}
+          onChange={(e) => setGlobalFilter(e.target.value)}
+          className="max-w-sm"
+        />
+
+        <Table className="border rounded-md">
+          <TableHeader className="bg-secondary">
+            {table.getHeaderGroups().map((hg) => (
+              <TableRow key={hg.id}>
+                {hg.headers.map((header) => (
+                  <TableHead className="text-white" key={header.id}>
+                    {flexRender(
+                      header.column.columnDef.header,
+                      header.getContext()
+                    )}
+                  </TableHead>
+                ))}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows.map((row) => (
+              <TableRow key={row.id}>
+                {row.getVisibleCells().map((cell) => (
+                  <TableCell key={cell.id}>
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+      <EditOdDialog
+        open={editDialogOpen}
+        initialData={editData}
+        onCancel={() => setEditDialogOpen(false)}
+        onSubmit={handleEditSubmit}
+      />
+    </>
   );
 }
