@@ -6,7 +6,8 @@ import {
   IconChartBar,
   IconInnerShadowTop,
   IconSearch,
-  IconCirclePlus
+  IconCirclePlus,
+  IconDashboardFilled
 } from "@tabler/icons-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -22,6 +23,11 @@ import {
 
 const data = {
   navMain: [
+    {
+      title: "Dashboard",
+      url: "/dashboard/student",
+      icon: IconDashboardFilled
+    },
     {
       title: "Apply OD",
       url: "/dashboard/student/apply-od",

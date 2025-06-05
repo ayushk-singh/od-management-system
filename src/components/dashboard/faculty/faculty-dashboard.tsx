@@ -5,9 +5,9 @@ import Link from "next/link"
 import {
   IconChartBar,
   IconInnerShadowTop,
-  IconListDetails,
   IconSearch,
-  IconCirclePlus
+  IconListDetails,
+  IconDashboardFilled
 } from "@tabler/icons-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -24,6 +24,11 @@ import {
 const data = {
   navMain: [
     {
+      title: "Dashboard",
+      url: "/dashboard/faculty",
+      icon: IconDashboardFilled
+    },
+    {
       title: "Manage Applications",
       url: "/dashboard/faculty/manage",
       icon: IconListDetails,
@@ -35,7 +40,7 @@ const data = {
     },
     {
       title: "Search Application",
-      url: "/dashboard/search",
+      url: "#",
       icon: IconSearch
     }
   ],

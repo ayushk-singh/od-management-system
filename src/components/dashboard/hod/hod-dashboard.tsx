@@ -5,9 +5,9 @@ import Link from "next/link"
 import {
   IconChartBar,
   IconInnerShadowTop,
-  IconListDetails,
   IconSearch,
-  IconCirclePlus
+  IconListDetails,
+  IconDashboardFilled
 } from "@tabler/icons-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -23,6 +23,11 @@ import {
 
 const data = {
   navMain: [
+    {
+      title: "Dashboard",
+      url: "/dashboard/hod",
+      icon: IconDashboardFilled
+    },
     {
       title: "Manage Applications",
       url: "/dashboard/hod/manage",
