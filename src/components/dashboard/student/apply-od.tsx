@@ -1,14 +1,20 @@
 "use client";
+
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { Button } from "@/components/ui/button"
-import { Calendar } from "@/components/ui/calendar"
+import { useEffect, useState } from "react";
+import { differenceInDays, format } from "date-fns";
+import { CalendarIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
+} from "@/components/ui/popover";
 import {
   Form,
   FormControl,
@@ -17,141 +23,97 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { 
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
-} from "@/components/ui/select"
-import { useState, useEffect } from "react";
-import { differenceInDays, format, parse } from "date-fns";
-import { CalendarIcon } from "lucide-react"
-import { cn } from "@/lib/utils";
+  SelectValue,
+} from "@/components/ui/select";
 
-const formSchema = z.object({
-  name: z.string().min(2, {
-    message: "Name must be at least 2 characters.",
-  }),
-  registerNumber: z.string().min(5, {
-    message: "Register number must be at least 5 characters.",
-  }),
-  class: z.string().min(1, {
-    message: "Class is required.",
-  }),
-  dateFrom: z.date({
-    required_error: "Start date is required.",
-  }),
-  dateTo: z.date({
-    required_error: "End date is required.",
-  }),
-  reason: z.string().min(10, {
-    message: "Reason must be at least 10 characters.",
-  }),
-  location: z.string().min(2, {
-    message: "Location must be at least 2 characters.",
-  }),
-  applyTo: z.string().min(1, {
-    message: "Please select who to apply to.",
-  }),
-}).refine(data => data.dateTo >= data.dateFrom, {
-  message: "End date must be after start date",
-  path: ["dateTo"],
-});
+const formSchema = z
+  .object({
+    dateFrom: z.date({ required_error: "Start date is required." }),
+    dateTo: z.date({ required_error: "End date is required." }),
+    location: z.string().min(2),
+    reason: z.string().min(10),
+    facultyId: z.string().min(1, { message: "Please select a faculty" }),
+  })
+  .refine((data) => data.dateTo >= data.dateFrom, {
+    message: "End date must be after start date",
+    path: ["dateTo"],
+  });
 
-export function ApplyOd(): React.ReactNode {
+export function ApplyOd({
+  faculties,
+}: {
+  faculties?: { id: string; name: string }[];
+}) {
   const [totalDays, setTotalDays] = useState<number | null>(null);
+  const [status, setStatus] = useState<null | "success" | "error">(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
-      registerNumber: "",
-      class: "",
-      reason: "",
       location: "",
-      applyTo: "",
+      reason: "",
+      facultyId: "",
     },
   });
 
-  // Calculate total days whenever dates change
+  const dateFrom = form.watch("dateFrom");
+  const dateTo = form.watch("dateTo");
+
   useEffect(() => {
-    const dateFrom = form.watch("dateFrom");
-    const dateTo = form.watch("dateTo");
-    
     if (dateFrom && dateTo) {
-      const days = differenceInDays(dateTo, dateFrom) + 1; // +1 to include both start and end dates
+      const days = differenceInDays(dateTo, dateFrom) + 1;
       setTotalDays(days > 0 ? days : null);
     } else {
       setTotalDays(null);
     }
-  }, [form.watch("dateFrom"), form.watch("dateTo")]);
+  }, [dateFrom, dateTo]);
 
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    setStatus(null);
+    setErrorMessage(null);
 
-
-
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    // Add total days to the form values
-    const submissionData = {
+    const payload = {
       ...values,
-      totalDays: totalDays,
+      totalDays,
     };
-    console.log(submissionData);
-    // Here you would typically send the data to your backend
-  }
 
+    try {
+      const res = await fetch("/api/od/apply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
+      const data = await res.json();
 
-  
+      if (res.ok && data.success) {
+        setStatus("success");
+        form.reset();
+        setTotalDays(null);
+      } else {
+        setStatus("error");
+        setErrorMessage(data.error || "Failed to submit application");
+      }
+    } catch (error) {
+      setStatus("error");
+      setErrorMessage((error as Error).message || "Network error");
+    }
+  };
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <FormField
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Name</FormLabel>
-                <FormControl>
-                  <Input placeholder="John Doe" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="registerNumber"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Register Number</FormLabel>
-                <FormControl>
-                  <Input placeholder="2021CSXXX" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="class"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Class</FormLabel>
-                <FormControl>
-                  <Input placeholder="CSE-A" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
+          {/* From Date */}
           <FormField
             control={form.control}
             name="dateFrom"
@@ -162,7 +124,7 @@ export function ApplyOd(): React.ReactNode {
                   <PopoverTrigger asChild>
                     <FormControl>
                       <Button
-                        variant={"outline"}
+                        variant="outline"
                         className={cn(
                           "pl-3 text-left font-normal",
                           !field.value && "text-muted-foreground"
@@ -177,7 +139,7 @@ export function ApplyOd(): React.ReactNode {
                       </Button>
                     </FormControl>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
+                  <PopoverContent align="start" className="p-0">
                     <Calendar
                       mode="single"
                       selected={field.value}
@@ -194,6 +156,7 @@ export function ApplyOd(): React.ReactNode {
             )}
           />
 
+          {/* To Date */}
           <FormField
             control={form.control}
             name="dateTo"
@@ -204,7 +167,7 @@ export function ApplyOd(): React.ReactNode {
                   <PopoverTrigger asChild>
                     <FormControl>
                       <Button
-                        variant={"outline"}
+                        variant="outline"
                         className={cn(
                           "pl-3 text-left font-normal",
                           !field.value && "text-muted-foreground"
@@ -219,15 +182,16 @@ export function ApplyOd(): React.ReactNode {
                       </Button>
                     </FormControl>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
+                  <PopoverContent align="start" className="p-0">
                     <Calendar
                       mode="single"
                       selected={field.value}
                       onSelect={field.onChange}
-                      disabled={(date) => {
-                        const fromDate = form.watch("dateFrom");
-                        return date < (fromDate || new Date(new Date().setHours(0, 0, 0, 0)));
-                      }}
+                      disabled={(date) =>
+                        date <
+                        (form.getValues("dateFrom") ||
+                          new Date(new Date().setHours(0, 0, 0, 0)))
+                      }
                       initialFocus
                     />
                   </PopoverContent>
@@ -237,20 +201,20 @@ export function ApplyOd(): React.ReactNode {
             )}
           />
 
+          {/* Total Days */}
           <FormItem>
             <FormLabel>Total Days</FormLabel>
             <FormControl>
-              <Input 
-                disabled 
+              <Input
+                disabled
                 value={totalDays !== null ? totalDays.toString() : ""}
-                placeholder="Calculated automatically" 
+                placeholder="Calculated automatically"
               />
             </FormControl>
-            <FormDescription>
-              Will be calculated automatically based on date range
-            </FormDescription>
+            <FormDescription>Calculated based on date range</FormDescription>
           </FormItem>
 
+          {/* Location */}
           <FormField
             control={form.control}
             name="location"
@@ -258,29 +222,35 @@ export function ApplyOd(): React.ReactNode {
               <FormItem>
                 <FormLabel>Location of Event</FormLabel>
                 <FormControl>
-                  <Input placeholder="City, Institution" {...field} />
+                  <Input placeholder="e.g., Coimbatore, CIT" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-          
+
+          {/* Faculty to apply to */}
           <FormField
             control={form.control}
-            name="applyTo"
+            name="facultyId"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Apply To</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormLabel>Apply To (Faculty)</FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select recipient" />
+                      <SelectValue placeholder="Select faculty" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="hod">HOD</SelectItem>
-                    <SelectItem value="principal">Principal</SelectItem>
-                    <SelectItem value="classAdvisor">Class Advisor</SelectItem>
+                    {(faculties ?? []).map((faculty) => (
+                      <SelectItem key={faculty.id} value={faculty.id}>
+                        {faculty.name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -289,6 +259,7 @@ export function ApplyOd(): React.ReactNode {
           />
         </div>
 
+        {/* Reason */}
         <FormField
           control={form.control}
           name="reason"
@@ -296,10 +267,10 @@ export function ApplyOd(): React.ReactNode {
             <FormItem>
               <FormLabel>Reason for OD</FormLabel>
               <FormControl>
-                <Textarea 
-                  placeholder="Please provide detailed reason for on-duty application..." 
+                <Textarea
+                  placeholder="Please provide a detailed reason for the on-duty application..."
                   className="min-h-[100px]"
-                  {...field} 
+                  {...field}
                 />
               </FormControl>
               <FormMessage />
@@ -307,7 +278,19 @@ export function ApplyOd(): React.ReactNode {
           )}
         />
 
-        <Button type="submit" className="w-full md:w-auto">Submit OD Application</Button>
+        {/* Status messages */}
+        {status === "success" && (
+          <p className="text-green-600 font-medium">
+            Your application has been submitted successfully.
+          </p>
+        )}
+        {status === "error" && errorMessage && (
+          <p className="text-red-600 font-medium">Error: {errorMessage}</p>
+        )}
+
+        <Button type="submit" className="w-full md:w-auto">
+          Submit OD Application
+        </Button>
       </form>
     </Form>
   );

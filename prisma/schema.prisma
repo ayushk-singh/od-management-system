@@ -1,0 +1,86 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ODStatus {
+  PENDING
+  APPROVED_BY_FACULTY
+  REJECTED_BY_FACULTY
+  FORWARDED_TO_HOD
+  APPROVED_BY_HOD
+  REJECTED_BY_HOD
+}
+
+model Department {
+  id        String     @id @default(cuid())
+  name      String     @unique
+  students  Student[]
+  faculties Faculty[]
+  hods      HOD[]
+}
+
+model Student {
+  id           String     @id @default(cuid())
+  clerkId      String     @unique
+  name         String
+  registerNo   String     @unique
+  class        String
+  departmentId String
+  department   Department @relation(fields: [departmentId], references: [id])
+  odRequests   ODApplication[] @relation("StudentODApplications")
+  createdAt    DateTime   @default(now())
+}
+
+model Faculty {
+  id           String     @id @default(cuid())
+  clerkId      String     @unique
+  name         String
+  email        String     @unique
+  departmentId String
+  department   Department @relation(fields: [departmentId], references: [id])
+  odApplicationsToReview ODApplication[] @relation("FacultyReviewOD")
+  createdAt    DateTime   @default(now())
+}
+
+model HOD {
+  id           String     @id @default(cuid())
+  clerkId      String     @unique
+  name         String
+  email        String     @unique
+  departmentId String     @unique // Only one HOD per department
+  department   Department @relation(fields: [departmentId], references: [id])
+  reviewedApplications ODApplication[] @relation("HODReviewOD")
+  createdAt    DateTime   @default(now())
+}
+
+model ODApplication {
+  id            String     @id @default(cuid())
+  studentId     String
+  facultyId     String
+  hodId         String?
+  status        ODStatus   @default(PENDING)
+  location      String
+  dateFrom      DateTime
+  dateTo        DateTime
+  totalDays     Int
+  reason        String
+
+  student       Student    @relation("StudentODApplications", fields: [studentId], references: [id])
+  faculty       Faculty    @relation("FacultyReviewOD", fields: [facultyId], references: [id])
+  hod           HOD?       @relation("HODReviewOD", fields: [hodId], references: [id])
+
+  facultyReviewedAt DateTime?
+  hodReviewedAt     DateTime?
+
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@index([studentId])
+  @@index([facultyId])
+  @@index([hodId])
+}

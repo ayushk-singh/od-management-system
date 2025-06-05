@@ -34,8 +34,8 @@ const data = {
       icon: IconCirclePlus,
     },
     {
-      title: "History",
-      url: "/dashboard/student/history",
+      title: "My Applications",
+      url: "/dashboard/student/my-applications",
       icon: IconChartBar,
     },
     {
