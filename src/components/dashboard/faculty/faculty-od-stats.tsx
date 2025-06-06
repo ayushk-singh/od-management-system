@@ -15,6 +15,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { Skeleton } from "@/components/ui/skeleton"
 import { useEffect, useState } from "react"
 
 export function FacultyODStats() {
@@ -24,6 +25,7 @@ export function FacultyODStats() {
     forwarded: 0,
     pending: 0,
   });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -35,84 +37,74 @@ export function FacultyODStats() {
         }
       } catch (err) {
         console.error("Failed to fetch faculty stats:", err);
+      } finally {
+        setLoading(false);
       }
     };
     fetchStats();
   }, []);
 
+  const cards = [
+    {
+      label: "Approved Applications",
+      count: stats.approved,
+      badge: (
+        <Badge className="bg-accent" variant="outline">
+          <IconCheck className="mr-1" /> Approved
+        </Badge>
+      ),
+      description: "These were accepted by you.",
+    },
+    {
+      label: "Rejected Applications",
+      count: stats.rejected,
+      badge: (
+        <Badge variant="destructive">
+          <IconX className="mr-1" /> Rejected
+        </Badge>
+      ),
+      description: "Declined by you due to invalid reasons.",
+    },
+    {
+      label: "Forwarded to HOD",
+      count: stats.forwarded,
+      badge: (
+        <Badge className="bg-primary" variant="outline">
+          <IconArrowForwardUp className="mr-1" /> Forwarded
+        </Badge>
+      ),
+      description: "Sent for HOD's final approval.",
+    },
+    {
+      label: "Pending Applications",
+      count: stats.pending,
+      badge: (
+        <Badge variant="secondary">
+          <IconClock className="mr-1" /> Pending
+        </Badge>
+      ),
+      description: "Yet to take action on these.",
+    },
+  ];
+
   return (
     <div className="grid grid-cols-1 gap-4 px-4 @xl/main:grid-cols-2 @5xl/main:grid-cols-4 lg:px-6 *:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs">
-      <Card className="@container/card">
-        <CardHeader>
-          <CardDescription>Approved Applications</CardDescription>
-          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            {stats.approved}
-          </CardTitle>
-          <CardAction>
-            <Badge className="bg-accent" variant="outline">
-              <IconCheck className="mr-1" />
-              Approved
-            </Badge>
-          </CardAction>
-        </CardHeader>
-        <CardFooter className="flex-col items-start gap-1.5 text-sm text-muted-foreground">
-          These were accepted by you.
-        </CardFooter>
-      </Card>
-
-      <Card className="@container/card">
-        <CardHeader>
-          <CardDescription>Rejected Applications</CardDescription>
-          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            {stats.rejected}
-          </CardTitle>
-          <CardAction>
-            <Badge variant="destructive">
-              <IconX className="mr-1" />
-              Rejected
-            </Badge>
-          </CardAction>
-        </CardHeader>
-        <CardFooter className="flex-col items-start gap-1.5 text-sm text-muted-foreground">
-          Declined by you due to invalid reasons.
-        </CardFooter>
-      </Card>
-
-      <Card className="@container/card">
-        <CardHeader>
-          <CardDescription>Forwarded to HOD</CardDescription>
-          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            {stats.forwarded}
-          </CardTitle>
-          <CardAction>
-            <Badge className="bg-primary" variant="outline">
-              <IconArrowForwardUp className="mr-1" />
-              Forwarded
-            </Badge>
-          </CardAction>
-        </CardHeader>
-        <CardFooter className="flex-col items-start gap-1.5 text-sm text-muted-foreground">
-          Sent for HOD's final approval.
-        </CardFooter>
-      </Card>
-
-      <Card className="@container/card">
-        <CardHeader>
-          <CardDescription>Pending Applications</CardDescription>
-          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            {stats.pending}
-          </CardTitle>
-          <CardAction>
-            <Badge variant="secondary">
-              <IconClock className="mr-1" />
-              Pending
-            </Badge>
-          </CardAction>
-        </CardHeader>
-        <CardFooter className="flex-col items-start gap-1.5 text-sm text-muted-foreground">
-          Yet to take action on these.
-        </CardFooter>
-      </Card>
+      {cards.map((card, idx) => (
+        <Card className="@container/card" key={idx}>
+          <CardHeader>
+            <CardDescription>{card.label}</CardDescription>
+            <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
+              {loading ? <Skeleton className="h-6 w-14 rounded bg-secondary" /> : card.count}
+            </CardTitle>
+            <CardAction>
+              {loading ? <Skeleton className="h-6 w-24 rounded-full bg-secondary" /> : card.badge}
+            </CardAction>
+          </CardHeader>
+          <CardFooter className="flex-col items-start gap-1.5 text-sm text-muted-foreground">
+            {card.description}
+          </CardFooter>
+        </Card>
+      ))}
     </div>
   );
 }

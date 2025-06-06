@@ -8,7 +8,7 @@ import {
 } from "@tanstack/react-table";
 import { useEffect, useState } from "react";
 import { getColumns, OdApplication } from "./column";
-import SkeletonTable  from "@/components/skeleton";
+import SkeletonTable from "@/components/skeleton";
 import {
   Table,
   TableBody,
@@ -110,7 +110,7 @@ export default function MyApplications() {
             {table.getHeaderGroups().map((hg) => (
               <TableRow key={hg.id}>
                 {hg.headers.map((header) => (
-                  <TableHead className="text-white" key={header.id}>
+                  <TableHead key={header.id}>
                     {flexRender(
                       header.column.columnDef.header,
                       header.getContext()

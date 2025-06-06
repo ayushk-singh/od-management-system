@@ -17,6 +17,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ManageApplicationsHOD() {
   const [data, setData] = useState<HODApplication[]>([]);
@@ -67,8 +68,6 @@ export default function ManageApplicationsHOD() {
     getFilteredRowModel: getFilteredRowModel(),
   });
 
-  if (loading) return <p>Loading...</p>;
-
   const hasRows = table.getRowModel().rows.length > 0;
 
   return (
@@ -98,7 +97,20 @@ export default function ManageApplicationsHOD() {
           ))}
         </TableHeader>
         <TableBody>
-          {hasRows ? (
+          {loading ? (
+            // Render 3 skeleton rows with 6 cells each (adjust as needed)
+            Array.from({ length: 3 }).map((_, idx) => (
+              <TableRow key={idx}>
+                {Array.from({ length: table.getAllColumns().length }).map(
+                  (_, cIdx) => (
+                    <TableCell key={cIdx}>
+                      <Skeleton className="h-4 w-full" />
+                    </TableCell>
+                  )
+                )}
+              </TableRow>
+            ))
+          ) : hasRows ? (
             table.getRowModel().rows.map((row) => (
               <TableRow key={row.id}>
                 {row.getVisibleCells().map((cell) => (
@@ -110,7 +122,10 @@ export default function ManageApplicationsHOD() {
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={table.getAllColumns().length} className="text-center py-6 text-muted-foreground">
+              <TableCell
+                colSpan={table.getAllColumns().length}
+                className="text-center py-6 text-muted-foreground"
+              >
                 No Pending Application.
               </TableCell>
             </TableRow>

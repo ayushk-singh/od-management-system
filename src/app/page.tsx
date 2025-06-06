@@ -4,7 +4,6 @@ import { useEffect } from "react";
 import { useAuth, useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import LandingPage from "@/components/aceternity/spotlight";
-import Loader from "@/components/skeleton";
 
 export default function Home() {
   const { isSignedIn } = useAuth();
@@ -28,8 +27,7 @@ export default function Home() {
   if (isSignedIn && user) {
     const role = user.publicMetadata?.role;
     if (role === "student" || role === "faculty" || role === "hod") {
-      // Show loader while redirecting
-      return <Loader />;
+      return null;
     }
   }
 

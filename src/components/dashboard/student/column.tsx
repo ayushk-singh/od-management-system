@@ -3,6 +3,9 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { IconCheck, IconClock, IconX } from "@tabler/icons-react";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -57,26 +60,41 @@ export const getColumns = (
     header: "Applied To",
     cell: ({ row }) => row.original.faculty?.name || "N/A",
   },
-  {
-    accessorKey: "status",
-    header: "Status",
-    cell: ({ row }) => {
-      const status = row.original.status;
-      return (
-        <span
-          className={`${
-            status === "PENDING"
-              ? "text-yellow-600 font-semibold"
-              : status.includes("APPROVED")
-              ? "text-green-600"
-              : "text-red-600"
-          }`}
-        >
-          {status}
-        </span>
-      );
-    },
+ {
+  accessorKey: "status",
+  header: "Status",
+  cell: ({ row }) => {
+    const status = row.original.status;
+
+    let variant: "outline" | "destructive" | "secondary" | "default" = "default";
+    let bgColorClass = "";
+    let IconComponent = null;
+
+    if (status === "PENDING") {
+      variant = "outline";
+      bgColorClass = "bg-yellow-600 text-white";
+      IconComponent = IconClock;
+    } else if (status.includes("APPROVED")) {
+      variant = "outline";
+      bgColorClass = "bg-accent text-white";
+      IconComponent = IconCheck;
+    } else if (status.includes("REJECTED")) {
+      variant = "destructive";
+      bgColorClass = "";
+      IconComponent = IconX;
+    } else {
+      variant = "default";
+      IconComponent = null;
+    }
+
+    return (
+      <Badge variant={variant} className={`${bgColorClass} font-semibold flex items-center gap-1`}>
+        {IconComponent && <IconComponent className="w-4 h-4" />}
+        {status}
+      </Badge>
+    );
   },
+},
   {
     id: "actions",
     header: "Actions",

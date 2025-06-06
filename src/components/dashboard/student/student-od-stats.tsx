@@ -90,7 +90,16 @@ export function StudentODStats() {
               <Skeleton className="h-8 w-16 rounded bg-secondary dark:bg-secondary" />
             )}
             <CardAction>
-              <Badge variant={card.badgeVariant as any}>{card.icon}{card.badge}</Badge>
+              <Badge
+                className={`
+                  ${card.badge === "Total" ? "bg-primary text-white" : ""}
+                  ${card.badge === "Approved" ? "bg-accent text-white" : ""}
+                  ${card.badge === "Pending" ? "bg-destructive text-white" : ""}
+                `}
+              >
+                {card.icon}
+                {card.badge}
+              </Badge>
             </CardAction>
           </CardHeader>
           <CardFooter className="text-sm text-muted-foreground">
@@ -99,5 +108,5 @@ export function StudentODStats() {
         </Card>
       ))}
     </div>
-  );
+  )
 }

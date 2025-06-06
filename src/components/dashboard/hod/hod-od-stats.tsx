@@ -14,7 +14,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { useEffect, useState } from "react"
+import { ReactElement, useEffect, useState } from "react"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export function HODODStats() {
   const [stats, setStats] = useState({
@@ -22,6 +23,8 @@ export function HODODStats() {
     rejected: 0,
     pending: 0,
   });
+
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -33,68 +36,70 @@ export function HODODStats() {
         }
       } catch (err) {
         console.error("Failed to fetch HOD stats:", err);
+      } finally {
+        setLoading(false);
       }
     };
     fetchStats();
   }, []);
 
+  const renderCard = (
+    description: string,
+    value: number,
+    icon: ReactElement,
+    badgeText: string,
+    badgeColor: string,
+    badgeVariant: "outline" | "destructive" | "secondary",
+    footerText: string
+  ) => (
+    <Card className="@container/card">
+      <CardHeader>
+        <CardDescription>{description}</CardDescription>
+        <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
+          {loading ? <Skeleton className="h-8 w-12" /> : value}
+        </CardTitle>
+        <CardAction>
+          <Badge className={badgeColor} variant={badgeVariant}>{icon}{badgeText}</Badge>
+        </CardAction>
+      </CardHeader>
+      <CardFooter className="flex-col items-start gap-1.5 text-sm text-muted-foreground">
+        {footerText}
+      </CardFooter>
+    </Card>
+  );
+
   return (
     <div className="grid grid-cols-1 gap-4 px-4 @xl/main:grid-cols-3 lg:px-6 *:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs">
-      
-      <Card className="@container/card">
-        <CardHeader>
-          <CardDescription>Pending Applications</CardDescription>
-          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            {stats.pending}
-          </CardTitle>
-          <CardAction>
-            <Badge variant="secondary">
-              <IconClock className="mr-1" />
-              Pending
-            </Badge>
-          </CardAction>
-        </CardHeader>
-        <CardFooter className="flex-col items-start gap-1.5 text-sm text-muted-foreground">
-          These need your attention.
-        </CardFooter>
-      </Card>
 
-      <Card className="@container/card">
-        <CardHeader>
-          <CardDescription>Approved by You</CardDescription>
-          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            {stats.approved}
-          </CardTitle>
-          <CardAction>
-            <Badge variant="outline">
-              <IconCheck className="mr-1" />
-              Approved
-            </Badge>
-          </CardAction>
-        </CardHeader>
-        <CardFooter className="flex-col items-start gap-1.5 text-sm text-muted-foreground">
-          You have approved these.
-        </CardFooter>
-      </Card>
+      {renderCard(
+        "Pending Applications",
+        stats.pending,
+        <IconClock className="mr-1" />,
+        "Pending",
+        "bg-primary",
+        "secondary",
+        "These need your attention."
+      )}
 
-      <Card className="@container/card">
-        <CardHeader>
-          <CardDescription>Rejected by You</CardDescription>
-          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            {stats.rejected}
-          </CardTitle>
-          <CardAction>
-            <Badge variant="destructive">
-              <IconX className="mr-1" />
-              Rejected
-            </Badge>
-          </CardAction>
-        </CardHeader>
-        <CardFooter className="flex-col items-start gap-1.5 text-sm text-muted-foreground">
-          Declined due to invalid reasons.
-        </CardFooter>
-      </Card>
+      {renderCard(
+        "Approved by You",
+        stats.approved,
+        <IconCheck className="mr-1" />,
+        "Approved",
+        "bg-accent",
+        "outline",
+        "You have approved these."
+      )}
 
+      {renderCard(
+        "Rejected by You",
+        stats.rejected,
+        <IconX className="mr-1" />,
+        "Rejected",
+        "bg-accent",
+        "destructive",
+        "Declined due to invalid reasons."
+      )}
     </div>
   )
 }

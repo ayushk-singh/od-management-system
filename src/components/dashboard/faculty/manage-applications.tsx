@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type FacultyOdApplication = {
   id: string;
@@ -26,12 +27,19 @@ type FacultyOdApplication = {
 export default function ManageApplications() {
   const [data, setData] = useState<FacultyOdApplication[]>([]);
   const [globalFilter, setGlobalFilter] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
-      const res = await fetch("/api/od/faculty-applications");
-      const json = await res.json();
-      setData(json.odList || []);
+      try {
+        const res = await fetch("/api/od/faculty-applications");
+        const json = await res.json();
+        setData(json.odList || []);
+      } catch (error) {
+        console.error("Error loading OD applications:", error);
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchData();
@@ -98,9 +106,6 @@ export default function ManageApplications() {
     getFilteredRowModel: getFilteredRowModel(),
   });
 
-  // Check if there are any pending applications left in filtered data
-  const hasPending = table.getRowModel().rows.some(row => row.original.status === "PENDING");
-
   return (
     <div className="space-y-4">
       <Input
@@ -108,40 +113,53 @@ export default function ManageApplications() {
         value={globalFilter}
         onChange={(e) => setGlobalFilter(e.target.value)}
         className="max-w-sm"
+        disabled={loading}
       />
 
-      <Table className="border">
-        <TableHeader>
-          {table.getHeaderGroups().map((group) => (
-            <TableRow key={group.id}>
-              {group.headers.map((header) => (
-                <TableHead key={header.id}>
-                  {flexRender(header.column.columnDef.header, header.getContext())}
-                </TableHead>
+      {loading ? (
+        <div className="space-y-4 animate-pulse">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="flex gap-2">
+              {[...Array(7)].map((_, j) => (
+                <Skeleton key={j} className="h-6 w-full rounded bg-secondary" />
               ))}
-            </TableRow>
+            </div>
           ))}
-        </TableHeader>
-        <TableBody>
-          {table.getRowModel().rows.length > 0 ? (
-            table.getRowModel().rows.map((row) => (
-              <TableRow key={row.id}>
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
+        </div>
+      ) : (
+        <Table className="border">
+          <TableHeader>
+            {table.getHeaderGroups().map((group) => (
+              <TableRow key={group.id}>
+                {group.headers.map((header) => (
+                  <TableHead key={header.id}>
+                    {flexRender(header.column.columnDef.header, header.getContext())}
+                  </TableHead>
                 ))}
               </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={columns.length} className="text-center py-8 text-muted-foreground">
-                No Pending Application.
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows.length > 0 ? (
+              table.getRowModel().rows.map((row) => (
+                <TableRow key={row.id}>
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={columns.length} className="text-center py-8 text-muted-foreground">
+                  No Pending Application.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      )}
     </div>
   );
 }
