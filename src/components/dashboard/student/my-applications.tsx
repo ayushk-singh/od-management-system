@@ -7,7 +7,8 @@ import {
   flexRender,
 } from "@tanstack/react-table";
 import { useEffect, useState } from "react";
-import { getColumns, OdApplication } from "./column"; // adjust import
+import { getColumns, OdApplication } from "./column";
+import SkeletonTable  from "@/components/skeleton";
 import {
   Table,
   TableBody,
@@ -92,7 +93,7 @@ export default function MyApplications() {
     getFilteredRowModel: getFilteredRowModel(),
   });
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <SkeletonTable />;
 
   return (
     <>

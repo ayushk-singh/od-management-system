@@ -16,14 +16,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export function StudentODStats() {
-  const [stats, setStats] = useState({
-    total: 0,
-    approved: 0,
-    rejected: 0,
-    pending: 0,
-  });
+  const [stats, setStats] = useState<{
+    total: number;
+    approved: number;
+    rejected: number;
+    pending: number;
+  } | null>(null);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -40,81 +41,63 @@ export function StudentODStats() {
     fetchStats();
   }, []);
 
+  const cards = [
+    {
+      title: "Total OD Applications",
+      value: stats?.total,
+      icon: <IconClipboardList className="mr-1" />,
+      badge: "Total",
+      badgeVariant: "outline",
+      footer: "All ODs you've applied so far.",
+    },
+    {
+      title: "Approved Applications",
+      value: stats?.approved,
+      icon: <IconCheck className="mr-1" />,
+      badge: "Approved",
+      badgeVariant: "outline",
+      footer: "Final approval by faculty/HOD.",
+    },
+    {
+      title: "Rejected Applications",
+      value: stats?.rejected,
+      icon: <IconX className="mr-1" />,
+      badge: "Rejected",
+      badgeVariant: "destructive",
+      footer: "Declined by faculty or HOD.",
+    },
+    {
+      title: "Pending Applications",
+      value: stats?.pending,
+      icon: <IconClock className="mr-1" />,
+      badge: "Pending",
+      badgeVariant: "secondary",
+      footer: "Awaiting action from faculty or HOD.",
+    },
+  ];
+
   return (
     <div className="grid grid-cols-1 gap-4 px-4 @xl/main:grid-cols-4 lg:px-6 *:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs">
-
-      <Card className="@container/card">
-        <CardHeader>
-          <CardDescription>Total OD Applications</CardDescription>
-          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            {stats.total}
-          </CardTitle>
-          <CardAction>
-            <Badge variant="outline">
-              <IconClipboardList className="mr-1" />
-              Total
-            </Badge>
-          </CardAction>
-        </CardHeader>
-        <CardFooter className="text-sm text-muted-foreground">
-          All ODs you've applied so far.
-        </CardFooter>
-      </Card>
-
-      <Card className="@container/card">
-        <CardHeader>
-          <CardDescription>Approved Applications</CardDescription>
-          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            {stats.approved}
-          </CardTitle>
-          <CardAction>
-            <Badge variant="outline">
-              <IconCheck className="mr-1" />
-              Approved
-            </Badge>
-          </CardAction>
-        </CardHeader>
-        <CardFooter className="text-sm text-muted-foreground">
-          Final approval by faculty/HOD.
-        </CardFooter>
-      </Card>
-
-      <Card className="@container/card">
-        <CardHeader>
-          <CardDescription>Rejected Applications</CardDescription>
-          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            {stats.rejected}
-          </CardTitle>
-          <CardAction>
-            <Badge variant="destructive">
-              <IconX className="mr-1" />
-              Rejected
-            </Badge>
-          </CardAction>
-        </CardHeader>
-        <CardFooter className="text-sm text-muted-foreground">
-          Declined by faculty or HOD.
-        </CardFooter>
-      </Card>
-
-      <Card className="@container/card">
-        <CardHeader>
-          <CardDescription>Pending Applications</CardDescription>
-          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            {stats.pending}
-          </CardTitle>
-          <CardAction>
-            <Badge variant="secondary">
-              <IconClock className="mr-1" />
-              Pending
-            </Badge>
-          </CardAction>
-        </CardHeader>
-        <CardFooter className="text-sm text-muted-foreground">
-          Awaiting action from faculty or HOD.
-        </CardFooter>
-      </Card>
-
+      {cards.map((card, i) => (
+        <Card className="@container/card" key={i}>
+          <CardHeader>
+            <CardDescription>{card.title}</CardDescription>
+            {stats ? (
+              <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
+                {card.value}
+              </CardTitle>
+            ) : (
+              <Skeleton className="h-8 w-16 rounded bg-secondary dark:bg-secondary" />
+            )}
+            <CardAction>
+              <Badge variant={card.badgeVariant as any}>{card.icon}{card.badge}</Badge>
+            </CardAction>
+          </CardHeader>
+          <CardFooter className="text-sm text-muted-foreground">
+            {card.footer}
+          </CardFooter>
+        </Card>
+      ))}
     </div>
   );
 }

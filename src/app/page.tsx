@@ -1,38 +1,37 @@
-import {
-  SignInButton,
-  SignUpButton,
-  SignedIn,
-  SignedOut,
-} from "@clerk/nextjs";
-import { auth } from "@clerk/nextjs/server";
-import { redirect } from "next/navigation";
+"use client";
 
+import { useEffect } from "react";
+import { useAuth, useUser } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
+import LandingPage from "@/components/aceternity/spotlight";
+import Loader from "@/components/skeleton";
 
+export default function Home() {
+  const { isSignedIn } = useAuth();
+  const { user } = useUser();
+  const router = useRouter();
 
+  useEffect(() => {
+    if (!isSignedIn || !user) return;
 
-export default async function Home() {
-  const { sessionClaims } = await auth();
-  const role = sessionClaims?.metadata?.role;
+    const role = user.publicMetadata?.role;
 
-  if (role === "student") {
-    redirect("/dashboard/student");
-  } else if (role === "faculty") {
-    redirect("/dashboard/faculty");
-  } else if (role === "hod") {
-    redirect("/dashboard/hod");
+    if (role === "student") {
+      router.push("/dashboard/student");
+    } else if (role === "faculty") {
+      router.push("/dashboard/faculty");
+    } else if (role === "hod") {
+      router.push("/dashboard/hod");
+    }
+  }, [isSignedIn, user, router]);
+
+  if (isSignedIn && user) {
+    const role = user.publicMetadata?.role;
+    if (role === "student" || role === "faculty" || role === "hod") {
+      // Show loader while redirecting
+      return <Loader />;
+    }
   }
 
-  return (
-    <>
-      <header className="flex justify-end items-center p-4 gap-4 h-16">
-            <SignedOut>
-              <SignInButton />
-              <SignUpButton />
-            </SignedOut>
-            <SignedIn>
-            </SignedIn>
-          </header>
-      <h1>Landing Page</h1>
-    </>
-  );
+  return <LandingPage />;
 }
