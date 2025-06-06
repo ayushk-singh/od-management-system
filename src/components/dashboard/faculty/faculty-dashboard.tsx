@@ -44,7 +44,7 @@ const data = {
     },
     {
       title: "Search Application",
-      url: "#",
+      url: "/dashboard/faculty/search",
       icon: IconSearch
     }
   ],

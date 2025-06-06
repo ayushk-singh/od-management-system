@@ -44,19 +44,19 @@ const data = {
     },
     {
       title: "Search Application",
-      url: "#",
+      url: "/dashboard/student/search",
       icon: IconSearch
     }
   ],
   navSecondary: [
     {
       title: "Raise an issue",
-      url: "",
+      url: "/dashboard/raise-an-issue",
       icon: IconReport
     },
     {
       title: "Need Help",
-      url: "",
+      url: "/help",
       icon: IconHelpCircle
     }
   ]

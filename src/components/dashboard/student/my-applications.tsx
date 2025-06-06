@@ -5,6 +5,7 @@ import {
   getCoreRowModel,
   getFilteredRowModel,
   flexRender,
+  PaginationState,
 } from "@tanstack/react-table";
 import { useEffect, useState } from "react";
 import { getColumns, OdApplication } from "./column";
@@ -19,6 +20,7 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { EditOdDialog } from "@/components/dashboard/student/edit-od-dialog";
+import { Button } from "@/components/ui/button";
 
 export default function MyApplications() {
   const [data, setData] = useState<OdApplication[]>([]);
@@ -26,6 +28,11 @@ export default function MyApplications() {
   const [globalFilter, setGlobalFilter] = useState("");
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editData, setEditData] = useState<OdApplication | null>(null);
+
+  const [pagination, setPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: 10,
+  });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -49,14 +56,11 @@ export default function MyApplications() {
         throw new Error(json.error || "Failed to delete");
       }
 
-      // Remove from local state only after successful deletion
       setData((prev) => prev.filter((od) => od.id !== id));
       console.log("Deleted:", id);
     } catch (error) {
       console.error("Delete failed:", error);
-      alert(
-        "Failed to delete OD application. Make sure it's in PENDING status."
-      );
+      alert("Failed to delete OD application. Make sure it's in PENDING status.");
     }
   };
 
@@ -69,28 +73,38 @@ export default function MyApplications() {
   };
 
   const handleEditSubmit = async (updated: OdApplication) => {
-    // call your API
     await fetch(`/api/od/${updated.id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(updated),
     });
 
-    // update local state
     setData((prev) => prev.map((d) => (d.id === updated.id ? updated : d)));
     setEditDialogOpen(false);
   };
 
+  const filteredData = data.filter((row) =>
+    JSON.stringify(row).toLowerCase().includes(globalFilter.toLowerCase())
+  );
+
+  const paginatedData = filteredData.slice(
+    pagination.pageIndex * pagination.pageSize,
+    (pagination.pageIndex + 1) * pagination.pageSize
+  );
+
   const columns = getColumns(handleDelete, handleEdit);
 
   const table = useReactTable({
-    data,
+    data: paginatedData,
     columns,
-    state: { globalFilter },
+    state: { globalFilter, pagination },
     onGlobalFilterChange: setGlobalFilter,
+    onPaginationChange: setPagination,
     globalFilterFn: "includesString",
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    manualPagination: true,
+    pageCount: Math.ceil(filteredData.length / pagination.pageSize),
   });
 
   if (loading) return <SkeletonTable />;
@@ -101,7 +115,10 @@ export default function MyApplications() {
         <Input
           placeholder="Search..."
           value={globalFilter}
-          onChange={(e) => setGlobalFilter(e.target.value)}
+          onChange={(e) => {
+            setGlobalFilter(e.target.value);
+            setPagination((prev) => ({ ...prev, pageIndex: 0 }));
+          }}
           className="max-w-sm"
         />
 
@@ -111,10 +128,7 @@ export default function MyApplications() {
               <TableRow key={hg.id}>
                 {hg.headers.map((header) => (
                   <TableHead key={header.id}>
-                    {flexRender(
-                      header.column.columnDef.header,
-                      header.getContext()
-                    )}
+                    {flexRender(header.column.columnDef.header, header.getContext())}
                   </TableHead>
                 ))}
               </TableRow>
@@ -132,7 +146,29 @@ export default function MyApplications() {
             ))}
           </TableBody>
         </Table>
+
+        {/* Pagination Controls */}
+        <div className="flex items-center justify-between pt-4">
+          <Button
+            variant="outline"
+            disabled={pagination.pageIndex === 0}
+            onClick={() => setPagination((prev) => ({ ...prev, pageIndex: prev.pageIndex - 1 }))}
+          >
+            Previous
+          </Button>
+          <span>
+            Page {pagination.pageIndex + 1} of {Math.max(1, Math.ceil(filteredData.length / pagination.pageSize))}
+          </span>
+          <Button
+            variant="outline"
+            disabled={(pagination.pageIndex + 1) * pagination.pageSize >= filteredData.length}
+            onClick={() => setPagination((prev) => ({ ...prev, pageIndex: prev.pageIndex + 1 }))}
+          >
+            Next
+          </Button>
+        </div>
       </div>
+
       <EditOdDialog
         open={editDialogOpen}
         initialData={editData}
