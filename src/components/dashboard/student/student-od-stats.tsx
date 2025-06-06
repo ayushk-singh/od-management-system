@@ -29,7 +29,7 @@ export function StudentODStats() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const res = await fetch("/api/od/student-stats");
+        const res = await fetch("/api/od/student/student-stats");
         const json = await res.json();
         if (res.ok) {
           setStats(json);

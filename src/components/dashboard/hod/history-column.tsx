@@ -1,5 +1,8 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
+import { IconCheck, IconX, IconClock } from "@tabler/icons-react";
+import { cn } from "@/lib/utils"; 
+import { ReactElement } from "react";
 
 export type HODHistoryRow = {
   id: string;
@@ -54,16 +57,42 @@ export const columns: ColumnDef<HODHistoryRow>[] = [
   {
     header: "Status",
     accessorKey: "status",
-    cell: ({ row }) => (
-      <span
-        className={`font-medium ${
-          row.original.status === "APPROVED_BY_HOD"
-            ? "text-green-600"
-            : "text-red-500"
-        }`}
-      >
-        {row.original.status.replace("_", " ")}
-      </span>
-    ),
+    cell: ({ row }) => {
+      const status = row.original.status;
+
+      const statusMap: Record<
+        string,
+        { label: string; color: string; icon: ReactElement }
+      > = {
+        APPROVED_BY_HOD: {
+          label: "Approved",
+          color: "bg-accent text-white",
+          icon: <IconCheck className="w-4 h-4 mr-1" />,
+        },
+        REJECTED_BY_HOD: {
+          label: "Rejected",
+          color: "bg-destructive text-white",
+          icon: <IconX className="w-4 h-4 mr-1" />,
+        },
+      };
+
+      const badge = statusMap[status] || {
+        label: status.replaceAll("_", " "),
+        color: "bg-gray-100 text-gray-800",
+        icon: <IconClock className="w-4 h-4 mr-1" />,
+      };
+
+      return (
+        <div
+          className={cn(
+            "inline-flex items-center px-2 py-1 rounded-full text-sm font-medium",
+            badge.color
+          )}
+        >
+          {badge.icon}
+          {badge.label}
+        </div>
+      );
+    },
   },
 ];

@@ -1,7 +1,9 @@
 // columns.ts
 import { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
-
+import { Badge } from "@/components/ui/badge";
+import { IconCheck, IconClock, IconX } from "@tabler/icons-react";
+import { ReactElement } from "react";
 
 export type FacultyHistoryOD = {
   id: string;
@@ -17,7 +19,6 @@ export type FacultyHistoryOD = {
     registerNo: string;
   };
 };
-
 
 export const facultyHistoryColumns: ColumnDef<FacultyHistoryOD>[] = [
   {
@@ -43,18 +44,49 @@ export const facultyHistoryColumns: ColumnDef<FacultyHistoryOD>[] = [
     header: "Status",
     cell: ({ row }) => {
       const status = row.original.status;
+
+      const statusMap: Record<
+        string,
+        { label: string; color: string; icon: ReactElement }
+      > = {
+        FORWARDED_TO_HOD: {
+          label: "Forwarded to HOD",
+          color: "bg-primary",
+          icon: <IconClock/>,
+        },
+        APPROVED_BY_FACULTY: {
+          label: "Approved by Faculty",
+          color: "bg-accent",
+          icon: <IconCheck/>,
+        },
+        REJECTED_BY_FACULTY: {
+          label: "Rejected by Faculty",
+          color: "bg-destructive",
+          icon: <IconX/>,
+        },
+        APPROVED_BY_HOD: {
+          label: "Approved by HOD",
+          color: "bg-accent",
+          icon: <IconCheck/> ,
+        },
+        REJECTED_BY_HOD: {
+          label: "Rejected by HOD",
+          color: "bg-destructive",
+          icon: <IconX/>,
+        },
+      };
+
+      const badge = statusMap[status] || {
+        label: status.replaceAll("_", " "),
+        color: "bg-muted",
+        icon: <IconClock className="w-4 h-4 mr-1" />,
+      };
+
       return (
-        <span
-          className={`${
-            status === "FORWARDED_TO_HOD"
-              ? "text-blue-600"
-              : status === "APPROVED_BY_FACULTY"
-              ? "text-green-600"
-              : "text-red-600"
-          } font-semibold`}
-        >
-          {status.replaceAll("_", " ")}
-        </span>
+        <Badge className={`text-white ${badge.color} flex items-center px-2 py-1`}>
+          {badge.icon}
+          {badge.label}
+        </Badge>
       );
     },
   },

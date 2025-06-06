@@ -21,6 +21,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { EditOdDialog } from "@/components/dashboard/student/edit-od-dialog";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 export default function MyApplications() {
   const [data, setData] = useState<OdApplication[]>([]);
@@ -36,7 +37,7 @@ export default function MyApplications() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const res = await fetch("/api/od/my-applications");
+      const res = await fetch("/api/od/student/get-od");
       const json = await res.json();
       setData(json.odList || []);
       setLoading(false);
@@ -46,7 +47,7 @@ export default function MyApplications() {
 
   const handleDelete = async (id: string) => {
     try {
-      const res = await fetch(`/api/od/${id}`, {
+      const res = await fetch(`/api/od/student/delete-od/${id}`, {
         method: "DELETE",
       });
 
@@ -57,10 +58,21 @@ export default function MyApplications() {
       }
 
       setData((prev) => prev.filter((od) => od.id !== id));
-      console.log("Deleted:", id);
+      toast.success("OD Deleted Successfully", {
+        duration: Infinity,
+        action: {
+          label: "Close",
+          onClick: () => toast.dismiss(),
+        },
+      });
     } catch (error) {
-      console.error("Delete failed:", error);
-      alert("Failed to delete OD application. Make sure it's in PENDING status.");
+      toast.error(`Delete failed:, ${error}`, {
+        duration: Infinity,
+        action: {
+          label: "Close",
+          onClick: () => toast.dismiss(),
+        },
+      });
     }
   };
 
@@ -73,15 +85,28 @@ export default function MyApplications() {
   };
 
   const handleEditSubmit = async (updated: OdApplication) => {
-    await fetch(`/api/od/${updated.id}`, {
+  try {
+    const res = await fetch(`/api/od/student/update-od/${updated.id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(updated),
     });
 
-    setData((prev) => prev.map((d) => (d.id === updated.id ? updated : d)));
+    if (!res.ok) {
+      throw new Error("Failed to update OD application");
+    }
+
+    const data = await res.json();
+
+    setData((prev) =>
+      prev.map((d) => (d.id === updated.id ? data.updated : d))
+    );
     setEditDialogOpen(false);
-  };
+    toast.success("OD application updated successfully!");
+  } catch (error) {
+    toast.error("Failed to update OD application. Please try again.");
+  }
+};
 
   const filteredData = data.filter((row) =>
     JSON.stringify(row).toLowerCase().includes(globalFilter.toLowerCase())
@@ -128,7 +153,10 @@ export default function MyApplications() {
               <TableRow key={hg.id}>
                 {hg.headers.map((header) => (
                   <TableHead key={header.id}>
-                    {flexRender(header.column.columnDef.header, header.getContext())}
+                    {flexRender(
+                      header.column.columnDef.header,
+                      header.getContext()
+                    )}
                   </TableHead>
                 ))}
               </TableRow>
@@ -152,17 +180,31 @@ export default function MyApplications() {
           <Button
             variant="outline"
             disabled={pagination.pageIndex === 0}
-            onClick={() => setPagination((prev) => ({ ...prev, pageIndex: prev.pageIndex - 1 }))}
+            onClick={() =>
+              setPagination((prev) => ({
+                ...prev,
+                pageIndex: prev.pageIndex - 1,
+              }))
+            }
           >
             Previous
           </Button>
           <span>
-            Page {pagination.pageIndex + 1} of {Math.max(1, Math.ceil(filteredData.length / pagination.pageSize))}
+            Page {pagination.pageIndex + 1} of{" "}
+            {Math.max(1, Math.ceil(filteredData.length / pagination.pageSize))}
           </span>
           <Button
             variant="outline"
-            disabled={(pagination.pageIndex + 1) * pagination.pageSize >= filteredData.length}
-            onClick={() => setPagination((prev) => ({ ...prev, pageIndex: prev.pageIndex + 1 }))}
+            disabled={
+              (pagination.pageIndex + 1) * pagination.pageSize >=
+              filteredData.length
+            }
+            onClick={() =>
+              setPagination((prev) => ({
+                ...prev,
+                pageIndex: prev.pageIndex + 1,
+              }))
+            }
           >
             Next
           </Button>

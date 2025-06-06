@@ -30,7 +30,7 @@ export function FacultyODStats() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const res = await fetch("/api/od/faculty-stats");
+        const res = await fetch("/api/od/faculty/faculty-stats");
         const json = await res.json();
         if (res.ok) {
           setStats(json);
@@ -49,7 +49,7 @@ export function FacultyODStats() {
       label: "Approved Applications",
       count: stats.approved,
       badge: (
-        <Badge className="bg-accent" variant="outline">
+        <Badge className="bg-accent text-white" variant="outline">
           <IconCheck className="mr-1" /> Approved
         </Badge>
       ),
@@ -69,7 +69,7 @@ export function FacultyODStats() {
       label: "Forwarded to HOD",
       count: stats.forwarded,
       badge: (
-        <Badge className="bg-primary" variant="outline">
+        <Badge className="bg-primary text-white" variant="outline">
           <IconArrowForwardUp className="mr-1" /> Forwarded
         </Badge>
       ),

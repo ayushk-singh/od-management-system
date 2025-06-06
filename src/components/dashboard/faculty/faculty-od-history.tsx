@@ -27,7 +27,7 @@ export default function FacultyODHistory() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch("/api/od/faculty-history");
+        const res = await fetch("/api/od/faculty/get-reviewed-applications");
         const json = await res.json();
         setData(json.odList || []);
       } catch (err) {
@@ -60,50 +60,60 @@ export default function FacultyODHistory() {
         className="max-w-sm"
         disabled={loading}
       />
-
-      <Table className="border rounded-md">
-        <TableHeader className="bg-secondary">
-          {table.getHeaderGroups().map((hg) => (
-            <TableRow key={hg.id}>
-              {hg.headers.map((header) => (
-                <TableHead className="text-white" key={header.id}>
-                  {flexRender(header.column.columnDef.header, header.getContext())}
-                </TableHead>
-              ))}
-            </TableRow>
-          ))}
-        </TableHeader>
-        <TableBody>
-          {loading ? (
-            // Show 5 rows of skeletons
-            Array.from({ length: 5 }).map((_, i) => (
-              <TableRow key={i}>
-                {facultyHistoryColumns.map((_, j) => (
-                  <TableCell key={j}>
-                    <Skeleton className="h-4 w-full rounded bg-muted" />
-                  </TableCell>
+      <div className="rounded-lg overflow-hidden border">
+        <Table>
+          <TableHeader className="bg-secondary">
+            {table.getHeaderGroups().map((hg) => (
+              <TableRow key={hg.id}>
+                {hg.headers.map((header) => (
+                  <TableHead className="text-white" key={header.id}>
+                    {flexRender(
+                      header.column.columnDef.header,
+                      header.getContext()
+                    )}
+                  </TableHead>
                 ))}
               </TableRow>
-            ))
-          ) : table.getRowModel().rows.length > 0 ? (
-            table.getRowModel().rows.map((row) => (
-              <TableRow key={row.id}>
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
+            ))}
+          </TableHeader>
+          <TableBody>
+            {loading ? (
+              // Show 5 rows of skeletons
+              Array.from({ length: 5 }).map((_, i) => (
+                <TableRow key={i}>
+                  {facultyHistoryColumns.map((_, j) => (
+                    <TableCell key={j}>
+                      <Skeleton className="h-4 w-full rounded bg-muted" />
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : table.getRowModel().rows.length > 0 ? (
+              table.getRowModel().rows.map((row) => (
+                <TableRow key={row.id}>
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell
+                  colSpan={facultyHistoryColumns.length}
+                  className="text-center py-8 text-muted-foreground"
+                >
+                  No History Found.
+                </TableCell>
               </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={facultyHistoryColumns.length} className="text-center py-8 text-muted-foreground">
-                No History Found.
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+            )}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 }

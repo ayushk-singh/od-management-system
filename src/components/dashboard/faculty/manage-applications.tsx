@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
 
 type FacultyOdApplication = {
   id: string;
@@ -32,7 +33,7 @@ export default function ManageApplications() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch("/api/od/faculty-applications");
+        const res = await fetch("/api/od/faculty/get-pending-applications");
         const json = await res.json();
         setData(json.odList || []);
       } catch (error) {
@@ -46,16 +47,17 @@ export default function ManageApplications() {
   }, []);
 
   const handleAction = async (id: string, action: "APPROVE" | "REJECT" | "FORWARD") => {
-    const res = await fetch(`/api/od/faculty-action/${id}`, {
+    const res = await fetch(`/api/od/faculty/faculty-action/${id}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action }),
     });
 
     if (res.ok) {
+      toast.success("Status Updated Successfully")
       setData(prev => prev.map(app => app.id === id ? { ...app, status: `UPDATED_${action}` } : app));
     } else {
-      alert("Action failed");
+      toast.error("Action failed");
     }
   };
 
@@ -87,9 +89,9 @@ export default function ManageApplications() {
 
         return (
           <div className="flex gap-2">
-            <Button size="sm" onClick={() => handleAction(id, "APPROVE")}>Approve</Button>
-            <Button size="sm" variant="destructive" onClick={() => handleAction(id, "REJECT")}>Reject</Button>
-            <Button size="sm" onClick={() => handleAction(id, "FORWARD")}>Forward to HOD</Button>
+            <Button size="sm" className="bg-accent hover:bg-accebt/70" onClick={() => handleAction(id, "APPROVE")}>Approve</Button>
+            <Button size="sm" className="bg-destructive hover:bg-destructive/70" onClick={() => handleAction(id, "REJECT")}>Reject</Button>
+            <Button size="sm" className="bg-primary hover:bg-primary/70" onClick={() => handleAction(id, "FORWARD")}>Forward to HOD</Button>
           </div>
         );
       },
@@ -127,12 +129,13 @@ export default function ManageApplications() {
           ))}
         </div>
       ) : (
-        <Table className="border">
-          <TableHeader>
+        <div className="rounded-lg overflow-hidden border">
+        <Table>
+          <TableHeader className="bg-secondary">
             {table.getHeaderGroups().map((group) => (
               <TableRow key={group.id}>
                 {group.headers.map((header) => (
-                  <TableHead key={header.id}>
+                  <TableHead className="text-white" key={header.id}>
                     {flexRender(header.column.columnDef.header, header.getContext())}
                   </TableHead>
                 ))}
@@ -159,6 +162,7 @@ export default function ManageApplications() {
             )}
           </TableBody>
         </Table>
+        </div>
       )}
     </div>
   );

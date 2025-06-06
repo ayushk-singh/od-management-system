@@ -26,7 +26,7 @@ export default function HODHistory() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const res = await fetch("/api/od/hod-history");
+      const res = await fetch("/api/od/hod/get-reviewed-applications");
       const json = await res.json();
       setData(json.odList || []);
       setLoading(false);
@@ -46,7 +46,7 @@ export default function HODHistory() {
   });
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 p-10">
       <h2 className="text-xl font-semibold">OD History</h2>
 
       <Input
@@ -55,46 +55,48 @@ export default function HODHistory() {
         onChange={(e) => setGlobalFilter(e.target.value)}
         className="max-w-md"
       />
-
-      <Table className="border rounded-md">
-        <TableHeader className="bg-secondary text-white">
-          {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
-              {headerGroup.headers.map((header) => (
-                <TableHead key={header.id}>
-                  {flexRender(
-                    header.column.columnDef.header,
-                    header.getContext()
-                  )}
-                </TableHead>
-              ))}
-            </TableRow>
-          ))}
-        </TableHeader>
-        <TableBody>
-          {loading ? (
-            [...Array(5)].map((_, rowIndex) => (
-              <TableRow key={`loading-${rowIndex}`}>
-                {columns.map((col, colIndex) => (
-                  <TableCell key={colIndex}>
-                    <Skeleton className="h-4 w-full" />
-                  </TableCell>
+      <div className="rounded-lg overflow-hidden border">
+        <Table className="border rounded-md">
+          <TableHeader className="bg-secondary text-white">
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => (
+                  <TableHead className="text-white" key={header.id}>
+                    {flexRender(
+                      header.column.columnDef.header,
+                      header.getContext()
+                    )}
+                  </TableHead>
                 ))}
               </TableRow>
-            ))
-          ) : (
-            table.getRowModel().rows.map((row) => (
-              <TableRow key={row.id}>
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {loading
+              ? [...Array(5)].map((_, rowIndex) => (
+                  <TableRow key={`loading-${rowIndex}`}>
+                    {columns.map((col, colIndex) => (
+                      <TableCell key={colIndex}>
+                        <Skeleton className="h-4 w-full" />
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              : table.getRowModel().rows.map((row) => (
+                  <TableRow key={row.id}>
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
                 ))}
-              </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 }

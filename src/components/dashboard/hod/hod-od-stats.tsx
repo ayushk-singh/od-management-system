@@ -29,7 +29,7 @@ export function HODODStats() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const res = await fetch("/api/od/hod-stats");
+        const res = await fetch("/api/od/hod/hod-stats");
         const json = await res.json();
         if (res.ok) {
           setStats(json);
@@ -86,7 +86,7 @@ export function HODODStats() {
         stats.approved,
         <IconCheck className="mr-1" />,
         "Approved",
-        "bg-accent",
+        "bg-accent text-white",
         "outline",
         "You have approved these."
       )}
@@ -96,7 +96,7 @@ export function HODODStats() {
         stats.rejected,
         <IconX className="mr-1" />,
         "Rejected",
-        "bg-accent",
+        "bg-destructive",
         "destructive",
         "Declined due to invalid reasons."
       )}

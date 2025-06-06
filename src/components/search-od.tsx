@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { IconCheck, IconClock, IconX } from "@tabler/icons-react";
 import {
   Table,
   TableBody,
@@ -45,7 +46,7 @@ export default function SearchOd() {
     setError(null);
     const controller = new AbortController();
 
-    fetch(`/api/od/search?q=${encodeURIComponent(searchTerm)}`, {
+    fetch(`/api/od/utils/search?q=${encodeURIComponent(searchTerm)}`, {
       signal: controller.signal,
     })
       .then(async (res) => {
@@ -73,15 +74,15 @@ export default function SearchOd() {
   const getStatusBadgeClass = (status: string) => {
     switch (status) {
       case "PENDING":
-        return "bg-yellow-600 text-white";
+        return "bg-primary text-white";
       case "APPROVED_BY_FACULTY":
       case "APPROVED_BY_HOD":
-        return "bg-green-600 text-white";
+        return "bg-accent text-white";
       case "REJECTED_BY_FACULTY":
       case "REJECTED_BY_HOD":
-        return "bg-red-600 text-white";
+        return "bg-destructive text-white";
       case "FORWARDED_TO_HOD":
-        return "bg-blue-600 text-white";
+        return "bg-primary text-white";
       default:
         return "bg-gray-600 text-white";
     }
@@ -104,44 +105,64 @@ export default function SearchOd() {
 
       {loading && <p>Loading...</p>}
       {error && <p className="text-red-600">{error}</p>}
-      {!loading && !error && odList.length === 0 && searchTerm.trim() !== "" && (
-        <p>No OD applications found.</p>
-      )}
+      {!loading &&
+        !error &&
+        odList.length === 0 &&
+        searchTerm.trim() !== "" && <p>No OD applications found.</p>}
 
       {paginatedData.length > 0 && (
         <>
-          <Table className="border rounded-md">
-            <TableHeader>
-              <TableRow>
-                <TableHead>ID</TableHead>
-                <TableHead>Date From</TableHead>
-                <TableHead>Date To</TableHead>
-                <TableHead>Reason</TableHead>
-                <TableHead>Location</TableHead>
-                <TableHead>Faculty</TableHead>
-                <TableHead>Register No.</TableHead>
-                <TableHead>Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {paginatedData.map((od) => (
-                <TableRow key={od.id}>
-                  <TableCell>{od.id}</TableCell>
-                  <TableCell>{format(new Date(od.dateFrom), "PPP")}</TableCell>
-                  <TableCell>{format(new Date(od.dateTo), "PPP")}</TableCell>
-                  <TableCell>{od.reason}</TableCell>
-                  <TableCell>{od.location}</TableCell>
-                  <TableCell>{od.faculty?.name || "N/A"}</TableCell>
-                  <TableCell>{od.student?.registerNo || "N/A"}</TableCell>
-                  <TableCell>
-                    <Badge className={getStatusBadgeClass(od.status)}>
-                      {od.status.replaceAll("_", " ")}
-                    </Badge>
-                  </TableCell>
+          <div className="rounded-lg overflow-hidden border">
+            <Table>
+              <TableHeader className="bg-secondary">
+                <TableRow>
+                  <TableHead className="text-white">ID</TableHead>
+                  <TableHead className="text-white">Date From</TableHead>
+                  <TableHead className="text-white">Date To</TableHead>
+                  <TableHead className="text-white">Reason</TableHead>
+                  <TableHead className="text-white">Location</TableHead>
+                  <TableHead className="text-white">Faculty</TableHead>
+                  <TableHead className="text-white">Register No.</TableHead>
+                  <TableHead className="text-white">Status</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {paginatedData.map((od) => (
+                  <TableRow key={od.id}>
+                    <TableCell>{od.id}</TableCell>
+                    <TableCell>
+                      {format(new Date(od.dateFrom), "PPP")}
+                    </TableCell>
+                    <TableCell>{format(new Date(od.dateTo), "PPP")}</TableCell>
+                    <TableCell>{od.reason}</TableCell>
+                    <TableCell>{od.location}</TableCell>
+                    <TableCell>{od.faculty?.name || "N/A"}</TableCell>
+                    <TableCell>{od.student?.registerNo || "N/A"}</TableCell>
+                    <TableCell>
+                      <Badge
+                        className={
+                          getStatusBadgeClass(od.status) +
+                          " flex items-center gap-1"
+                        }
+                      >
+                        {od.status === "APPROVED_BY_FACULTY" ||
+                        od.status === "APPROVED_BY_HOD" ? (
+                          <IconCheck size={16} />
+                        ) : od.status === "REJECTED_BY_FACULTY" ||
+                          od.status === "REJECTED_BY_HOD" ? (
+                          <IconX size={16} />
+                        ) : od.status === "PENDING" ||
+                          od.status === "FORWARDED_TO_HOD" ? (
+                          <IconClock size={16} />
+                        ) : null}
+                        {od.status.replaceAll("_", " ")}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
 
           <div className="flex items-center justify-between pt-4">
             <Button
@@ -152,7 +173,8 @@ export default function SearchOd() {
               Previous
             </Button>
             <span>
-              Page {pageIndex + 1} of {Math.max(1, Math.ceil(odList.length / PAGE_SIZE))}
+              Page {pageIndex + 1} of{" "}
+              {Math.max(1, Math.ceil(odList.length / PAGE_SIZE))}
             </span>
             <Button
               variant="outline"

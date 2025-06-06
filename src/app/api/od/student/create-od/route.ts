@@ -61,7 +61,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Optional: Verify student's department and faculty's department are the same
+   
     if (student.departmentId !== faculty.departmentId) {
       return NextResponse.json(
         {

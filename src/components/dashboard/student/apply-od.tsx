@@ -1,3 +1,5 @@
+//FIXME: multiple submission if done one after another
+
 "use client";
 
 import { z } from "zod";
@@ -87,7 +89,7 @@ export function ApplyOd({
     };
 
     try {
-      const res = await fetch("/api/od/apply", {
+      const res = await fetch("/api/od/student/create-od", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -222,7 +224,7 @@ export function ApplyOd({
               <FormItem>
                 <FormLabel>Location of Event</FormLabel>
                 <FormControl>
-                  <Input placeholder="e.g., Coimbatore, CIT" {...field} />
+                  <Input placeholder="e.g., HICAS, Coimbatore" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -277,6 +279,8 @@ export function ApplyOd({
             </FormItem>
           )}
         />
+
+        {/* TODO: make a pop up for success and failure with OD id and button to download application as pdf */}
 
         {/* Status messages */}
         {status === "success" && (

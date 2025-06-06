@@ -1,4 +1,3 @@
-// app/api/od/manage-applications/route.ts
 import { NextResponse } from "next/server";
 import { getFacultyByClerkId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
