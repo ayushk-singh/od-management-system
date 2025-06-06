@@ -7,10 +7,14 @@ import {
   IconInnerShadowTop,
   IconSearch,
   IconListDetails,
-  IconDashboardFilled
+  IconDashboardFilled,
+  IconReport,
+  IconHelpCircle
 } from "@tabler/icons-react"
 
 import { NavMain } from "@/components/nav-main"
+import { NavUser } from "@/components/nav-user"
+import { NavSecondary } from "@/components/nav-secondary"
 import {
   Sidebar,
   SidebarContent,
@@ -44,6 +48,18 @@ const data = {
       icon: IconSearch
     }
   ],
+  navSecondary: [
+    {
+      title: "Raise an issue",
+      url: "",
+      icon: IconReport
+    },
+    {
+      title: "Need Help",
+      url: "",
+      icon: IconHelpCircle
+    }
+  ]
 }
 
 export function FacultyAppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
@@ -66,8 +82,10 @@ export function FacultyAppSidebar({ ...props }: React.ComponentProps<typeof Side
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
+         <NavSecondary className="mt-auto" items={data.navSecondary}/>
       </SidebarContent>
       <SidebarFooter>
+        <NavUser/>
       </SidebarFooter>
     </Sidebar>
   )

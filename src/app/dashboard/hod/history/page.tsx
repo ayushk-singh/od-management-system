@@ -1,8 +1,9 @@
 import React from 'react'
+import HODHistory from '@/components/dashboard/hod/hod-history'
 
 function page() {
   return (
-    <div>hod history</div>
+    <div><HODHistory/></div>
   )
 }
 

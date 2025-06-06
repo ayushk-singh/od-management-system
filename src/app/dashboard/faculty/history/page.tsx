@@ -1,8 +1,11 @@
 import React from 'react'
+import FacultyODHistory from '@/components/dashboard/faculty/faculty-od-history'
 
 function page() {
   return (
-    <div>faculty history</div>
+    <div className='p-10'>
+      <FacultyODHistory/>
+    </div>
   )
 }
 

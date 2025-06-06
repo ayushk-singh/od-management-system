@@ -10,6 +10,7 @@ import {
   IconCirclePlus
 } from "@tabler/icons-react"
 
+import { NavUser } from "./nav-user"
 import { NavMain } from "@/components/nav-main"
 import {
   Sidebar,
@@ -68,6 +69,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavMain items={data.navMain} />
       </SidebarContent>
       <SidebarFooter>
+        <NavUser/>
       </SidebarFooter>
     </Sidebar>
   )

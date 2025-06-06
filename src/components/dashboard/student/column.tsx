@@ -93,7 +93,7 @@ export const getColumns = (
 
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button size="sm" variant="destructive">
+              <Button size="sm" disabled={!isPending} variant="destructive">
                 Delete
               </Button>
             </AlertDialogTrigger>

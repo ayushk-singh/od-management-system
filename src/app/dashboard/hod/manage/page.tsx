@@ -1,8 +1,11 @@
 import React from 'react'
+import ManageApplicationsHOD from '@/components/dashboard/hod/manage-application'
 
 function page() {
   return (
-    <div>hod manage</div>
+    <div className='p-10'>
+      <ManageApplicationsHOD/>
+    </div>
   )
 }
 
