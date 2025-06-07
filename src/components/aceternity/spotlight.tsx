@@ -89,7 +89,7 @@ export default function LandingPage() {
                 and paperless system.
               </p>
             </div>
-            <img
+            <Image
               src="/linear.webp"
               width={500}
               height={500}

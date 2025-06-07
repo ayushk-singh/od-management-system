@@ -1,6 +1,6 @@
 "use client";
 
-import { IconDashboardFilled, type Icon } from "@tabler/icons-react";
+import { type Icon } from "@tabler/icons-react";
 
 import Link from "next/link";
 

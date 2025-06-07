@@ -1,9 +1,16 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { generateODPDF } from "@/lib/generateOdPdf";
+import { getParamFromURL } from "@/lib/utils";
+import type { ODData } from "@/lib/generateOdPdf";
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
-  const { id } = params;
+
+export async function GET(req: NextRequest) {
+  const id = getParamFromURL(req.url, "generate-od-pdf");
+
+  if (!id) {
+    return new NextResponse("Invalid or missing ID", { status: 400 });
+  }
 
   const od = await prisma.oDApplication.findUnique({
     where: { id },
@@ -22,7 +29,28 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     return new NextResponse("OD not found", { status: 404 });
   }
 
-  const pdfBytes = await generateODPDF(od);
+  const odDataForPdf: ODData = {
+    id: od.id,
+    createdAt: od.createdAt.toISOString(),
+    dateFrom: od.dateFrom.toISOString(),
+    dateTo: od.dateTo.toISOString(),
+    totalDays: od.totalDays,
+    location: od.location,
+    reason: od.reason,
+    status: od.status,
+    student: {
+      name: od.student.name,
+      registerNo: od.student.registerNo,
+      department: {
+        name: od.student.department.name,
+      },
+    },
+    faculty: {
+      name: od.faculty.name,
+    },
+  };
+
+  const pdfBytes = await generateODPDF(odDataForPdf);
 
   return new NextResponse(pdfBytes, {
     status: 200,

@@ -3,34 +3,74 @@ import { readFile } from "fs/promises";
 import path from "path";
 import QRCode from "qrcode";
 
-export async function generateODPDF(odData: any) {
+// Define a clear type for OD data
+export interface ODData {
+  id: string;
+  createdAt: string;
+  dateFrom: string;
+  dateTo: string;
+  totalDays: number;
+  location: string;
+  reason: string;
+  status: string;
+  student: {
+    name: string;
+    registerNo: string;
+    department: {
+      name: string;
+    };
+  };
+  faculty: {
+    name: string;
+  };
+}
+
+// Helper to wrap long text manually
+function wrapText(text: string, maxLineLength = 40): string[] {
+  const words = text.split(" ");
+  const lines: string[] = [];
+  let currentLine = "";
+
+  for (const word of words) {
+    if ((currentLine + word).length <= maxLineLength) {
+      currentLine += word + " ";
+    } else {
+      lines.push(currentLine.trim());
+      currentLine = word + " ";
+    }
+  }
+  if (currentLine.trim()) lines.push(currentLine.trim());
+  return lines;
+}
+
+export async function generateODPDF(odData: ODData) {
   const pdfDoc = await PDFDocument.create();
   const page = pdfDoc.addPage([595, 842]); // A4 size
   const { width, height } = page.getSize();
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const fontSize = 11;
 
-  // === Header (full-width banner) ===
+  // Header
   const headerBytes = await readFile(path.resolve("./public/pdf-header.png"));
   const headerImage = await pdfDoc.embedPng(headerBytes);
   page.drawImage(headerImage, {
     x: 0,
     y: height - 80,
-    width: width,
+    width,
     height: 80,
   });
 
-  // === Footer (full-width) ===
+  // Footer
   const footerBytes = await readFile(path.resolve("./public/pdf-footer.png"));
   const footerImage = await pdfDoc.embedPng(footerBytes);
   page.drawImage(footerImage, {
     x: 0,
     y: 0,
-    width: width,
+    width,
     height: 50,
   });
 
-  // === Title ===
+  // Title
   page.drawText("Online OD Applications", {
     x: width / 2 - 70,
     y: height - 120,
@@ -39,20 +79,19 @@ export async function generateODPDF(odData: any) {
     color: rgb(0, 0, 0),
   });
 
-  // === Date ===
-  const createdAtDate = new Date(odData.createdAt).toDateString();
-  page.drawText(`Date: ${createdAtDate}`, {
+  // Date
+  page.drawText(`Date: ${new Date(odData.createdAt).toDateString()}`, {
     x: 50,
     y: height - 140,
     size: fontSize,
     font,
   });
 
-  // === Merged Box ===
+  // Application info box
   const boxTopY = height - 160;
   const boxHeight = 260;
   const boxX = 50;
-  const boxWidth = 495; // Width to cover both previous boxes
+  const boxWidth = 495;
 
   page.drawRectangle({
     x: boxX,
@@ -63,7 +102,7 @@ export async function generateODPDF(odData: any) {
     borderWidth: 1,
   });
 
-  // === Left Column: Application Details ===
+  // Left column content
   let currentY = boxTopY - 20;
   const gap = 20;
   const leftColumnX = boxX + 10;
@@ -90,11 +129,10 @@ export async function generateODPDF(odData: any) {
     currentY -= gap;
   }
 
-  // === Right Column: Reason & Status ===
-  const rightColumnX = boxX + 260; // Start right side content ~260px from left
+  // Right column: Reason & Status
+  const rightColumnX = boxX + 260;
   let rightY = boxTopY - 20;
 
-  // Reason label
   page.drawText("Reason:", {
     x: rightColumnX,
     y: rightY,
@@ -103,19 +141,18 @@ export async function generateODPDF(odData: any) {
   });
   rightY -= 20;
 
-  // Reason text, wrapped with maxWidth
-  page.drawText(odData.reason, {
-    x: rightColumnX,
-    y: rightY,
-    size: fontSize,
-    font,
-    maxWidth: 215,
-  });
+  const wrappedReason = wrapText(odData.reason);
+  for (const line of wrappedReason) {
+    page.drawText(line, {
+      x: rightColumnX,
+      y: rightY,
+      size: fontSize,
+      font,
+    });
+    rightY -= fontSize + 4;
+  }
 
-  // Adjust y to place status below reason text, leave ~100px space (adjust as needed)
-  rightY -= 120;
-
-  // Status text
+  rightY -= 20;
   page.drawText(`Current Status: ${odData.status}`, {
     x: rightColumnX,
     y: rightY,
@@ -123,13 +160,13 @@ export async function generateODPDF(odData: any) {
     font,
   });
 
-  // === QR Code ===
-  const qrDataUrl = await QRCode.toDataURL(
-    `http://localhost:3000/verify/${odData.id}`
-  );
+  // QR Code
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+  const qrDataUrl = await QRCode.toDataURL(`${baseUrl}/verify/${odData.id}`);
   const qrImageBytes = Buffer.from(qrDataUrl.split(",")[1], "base64");
   const qrImage = await pdfDoc.embedPng(qrImageBytes);
   const qrDims = qrImage.scale(0.5);
+
   page.drawImage(qrImage, {
     x: width - 150,
     y: 200,
@@ -144,7 +181,7 @@ export async function generateODPDF(odData: any) {
     font,
   });
 
-  // === Return PDF Buffer ===
+  // Finalize and return PDF
   const pdfBytes = await pdfDoc.save();
   return pdfBytes;
 }

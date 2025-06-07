@@ -1,5 +1,3 @@
-import Image from "next/image";
-
 export default function Unauthorized() {
   return (
     <div className="flex min-h-[100dvh] flex-col items-center justify-center bg-background px-4 py-12 sm:px-6 lg:px-8">

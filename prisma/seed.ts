@@ -5,25 +5,36 @@ const prisma = new PrismaClient();
 async function main() {
   const dept = await prisma.department.create({
     data: {
-      name: "BBA",
+      name: "BCA",
     },
   });
 
 
-  // await prisma.faculty.create({
-  //   data: {
-  //     name: "Prof. other",
-  //     email: "faculty1@oms.com",
-  //     clerkId: "user_2y52RoeJVuXkhaE6n4qAf73ogx",
-  //     departmentId: "cmbjn8s250000jt0v2v4mnm3j",
-  //   },
-  // });
+  await prisma.student.create({
+    data: {
+      name: "Ayush Singh",
+      registerNo: "23BCA207",
+      class: "III-BCA-C",
+      clerkId: "user_2yBOklDpyn7VyqXdt8Tk2KsQB34",
+      departmentId: dept.id,
+    },
+  });
+
+
+  await prisma.faculty.create({
+    data: {
+      name: "Faculty Surname",
+      email: "faculty@oms.com",
+      clerkId: "user_2yBOqJhSEskVvld5WA5AO7OxBBc",
+      departmentId: dept.id,
+    },
+  });
 
   await prisma.hOD.create({
     data: {
-      name: "Dr. Sharma",
-      email: "bbahod@oms.com",
-      clerkId: "user_2y7n7piLxFCDVLgCRFzNSKKLop1",
+      name: "HOD surname",
+      email: "hod@oms.com",
+      clerkId: "user_2yBOnQcbtpol45MoWk21UI5Bx3x",
       departmentId: dept.id,
     },
   });

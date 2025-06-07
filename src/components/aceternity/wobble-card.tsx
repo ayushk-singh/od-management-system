@@ -3,6 +3,7 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 import { WobbleCard } from "../ui/wobble-card";
+import Image from "next/image";
 
 export function WobbleCardDemo() {
     
@@ -30,7 +31,7 @@ export function WobbleCardDemo() {
               popular AI platform for developers.
             </p>
           </div>
-          <img
+          <Image
             src="/linear.webp"
             width={500}
             height={500}
@@ -59,7 +60,7 @@ export function WobbleCardDemo() {
               popular AI platform for developers.
             </p>
           </div>
-          <img
+          <Image
             src="/linear.webp"
             width={500}
             height={500}

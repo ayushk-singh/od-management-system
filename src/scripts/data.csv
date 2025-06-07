@@ -1,0 +1,4 @@
+name,email,password,registerNo,class,departmentName,role
+Alice Smith,alice@example.com,StrongPass123,12345,A,BCA,student
+Bob Johnson,bob@example.com,StrongPass123,,,"BCA",faculty
+Carol Thomas,carol@example.com,StrongPass123,,,"BCA",hod

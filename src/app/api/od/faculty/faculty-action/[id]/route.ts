@@ -1,12 +1,17 @@
 import { prisma } from "@/lib/prisma";
 import { getFacultyByClerkId } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
+import type { Prisma } from "@prisma/client";
+import { getParamFromURL } from "@/lib/utils";
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  const id = params.id;
+export async function POST(req: NextRequest) {
+
+  const id = getParamFromURL(req.url, "faculty-action")
+
+  if (!id) {
+    return NextResponse.json({ error: "Missing OD ID in path" }, { status: 400 });
+  }
+
   const { action } = await req.json();
 
   const faculty = await getFacultyByClerkId();
@@ -16,7 +21,7 @@ export async function POST(
   if (!od || od.facultyId !== faculty.id)
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-  const updates: any = {
+  const updates: Prisma.ODApplicationUpdateInput = {
     facultyReviewedAt: new Date(),
     updatedAt: new Date(),
   };

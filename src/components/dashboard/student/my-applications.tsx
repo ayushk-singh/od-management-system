@@ -104,7 +104,7 @@ export default function MyApplications() {
     setEditDialogOpen(false);
     toast.success("OD application updated successfully!");
   } catch (error) {
-    toast.error("Failed to update OD application. Please try again.");
+    toast.error(`Failed to update OD application. Please try again. Erro: ${error}`);
   }
 };
 

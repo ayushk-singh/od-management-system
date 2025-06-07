@@ -1,8 +1,16 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getParamFromURL } from "@/lib/utils";
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
-  const { id } = params;
+export async function GET(req: NextRequest) {
+  const id = getParamFromURL(req.url, "verify");
+
+  if (!id) {
+    return NextResponse.json(
+      { valid: false, message: "Missing ID" },
+      { status: 400 }
+    );
+  }
 
   // Fetch OD application with status
   const od = await prisma.oDApplication.findUnique({
