@@ -14,6 +14,7 @@ export type FacultyHistoryOD = {
   location: string;
   status: string;
   facultyReviewedAt: string;
+  facultyRemark?: string | null;
   student: {
     name: string;
     registerNo: string;
@@ -40,6 +41,12 @@ export const facultyHistoryColumns: ColumnDef<FacultyHistoryOD>[] = [
     header: "Location",
   },
   {
+    accessorKey: "facultyRemark",
+    header: "Remark",
+    cell: ({ row }) => row.original.facultyRemark || "-", // show "-" if empty/null
+  },
+
+  {
     accessorKey: "status",
     header: "Status",
     cell: ({ row }) => {
@@ -52,27 +59,27 @@ export const facultyHistoryColumns: ColumnDef<FacultyHistoryOD>[] = [
         FORWARDED_TO_HOD: {
           label: "Forwarded to HOD",
           color: "bg-primary",
-          icon: <IconClock/>,
+          icon: <IconClock />,
         },
         APPROVED_BY_FACULTY: {
           label: "Approved by Faculty",
           color: "bg-accent",
-          icon: <IconCheck/>,
+          icon: <IconCheck />,
         },
         REJECTED_BY_FACULTY: {
           label: "Rejected by Faculty",
           color: "bg-destructive",
-          icon: <IconX/>,
+          icon: <IconX />,
         },
         APPROVED_BY_HOD: {
           label: "Approved by HOD",
           color: "bg-accent",
-          icon: <IconCheck/> ,
+          icon: <IconCheck />,
         },
         REJECTED_BY_HOD: {
           label: "Rejected by HOD",
           color: "bg-destructive",
-          icon: <IconX/>,
+          icon: <IconX />,
         },
       };
 
@@ -83,7 +90,9 @@ export const facultyHistoryColumns: ColumnDef<FacultyHistoryOD>[] = [
       };
 
       return (
-        <Badge className={`text-white ${badge.color} flex items-center px-2 py-1`}>
+        <Badge
+          className={`text-white ${badge.color} flex items-center px-2 py-1`}
+        >
           {badge.icon}
           {badge.label}
         </Badge>

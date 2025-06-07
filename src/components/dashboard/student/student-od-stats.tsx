@@ -16,7 +16,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { Skeleton } from "@/components/ui/skeleton"
 
 export function StudentODStats() {
   const [stats, setStats] = useState<{
@@ -82,13 +81,9 @@ export function StudentODStats() {
         <Card className="@container/card" key={i}>
           <CardHeader>
             <CardDescription>{card.title}</CardDescription>
-            {stats ? (
               <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
                 {card.value}
               </CardTitle>
-            ) : (
-              <Skeleton className="h-8 w-16 rounded bg-secondary dark:bg-secondary" />
-            )}
             <CardAction>
               <Badge
                 className={`

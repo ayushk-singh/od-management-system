@@ -15,7 +15,6 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { ReactElement, useEffect, useState } from "react"
-import { Skeleton } from "@/components/ui/skeleton"
 
 export function HODODStats() {
   const [stats, setStats] = useState({
@@ -56,7 +55,7 @@ export function HODODStats() {
       <CardHeader>
         <CardDescription>{description}</CardDescription>
         <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-          {loading ? <Skeleton className="h-8 w-12" /> : value}
+          {value}
         </CardTitle>
         <CardAction>
           <Badge className={badgeColor} variant={badgeVariant}>{icon}{badgeText}</Badge>

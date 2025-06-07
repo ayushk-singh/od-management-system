@@ -15,18 +15,19 @@ export async function PUT(req: NextRequest) {
   if (!hod) return new Response("Not an HOD", { status: 403 });
 
   const id = getParamFromURL(req.url, "hod-action");
+  if (!id) return new Response("Invalid OD ID", { status: 400 });
 
-  if (!id) {
-    return new Response("Invalid OD ID", { status: 400 });
+  const { action, remark } = await req.json();
+
+  if (remark && typeof remark !== "string") {
+    return new Response("Invalid remark", { status: 400 });
   }
 
-  const { action } = await req.json();
-
   const updateData: Prisma.ODApplicationUpdateInput = {
-    hod: {
-      connect: { id: hod.id },
-    },
+    hod: { connect: { id: hod.id } },
     hodReviewedAt: new Date(),
+    updatedAt: new Date(),
+    hodRemark: remark || null,
   };
 
   switch (action) {
@@ -40,10 +41,13 @@ export async function PUT(req: NextRequest) {
       return new Response("Invalid action", { status: 400 });
   }
 
-  const updated = await prisma.oDApplication.update({
-    where: { id },
-    data: updateData,
-  });
-
-  return NextResponse.json({ updated });
+  try {
+    const updated = await prisma.oDApplication.update({
+      where: { id },
+      data: updateData,
+    });
+    return NextResponse.json({ updated });
+  } catch (error) {
+    return new Response("Failed to update OD application", { status: 500 });
+  }
 }

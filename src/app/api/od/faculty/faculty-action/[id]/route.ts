@@ -5,17 +5,20 @@ import type { Prisma } from "@prisma/client";
 import { getParamFromURL } from "@/lib/utils";
 
 export async function POST(req: NextRequest) {
-
-  const id = getParamFromURL(req.url, "faculty-action")
+  const id = getParamFromURL(req.url, "faculty-action");
 
   if (!id) {
-    return NextResponse.json({ error: "Missing OD ID in path" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Missing OD ID in path" },
+      { status: 400 }
+    );
   }
 
-  const { action } = await req.json();
+  const { action, remark } = await req.json();
 
   const faculty = await getFacultyByClerkId();
-  if (!faculty) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!faculty)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const od = await prisma.oDApplication.findUnique({ where: { id } });
   if (!od || od.facultyId !== faculty.id)
@@ -24,6 +27,7 @@ export async function POST(req: NextRequest) {
   const updates: Prisma.ODApplicationUpdateInput = {
     facultyReviewedAt: new Date(),
     updatedAt: new Date(),
+    facultyRemark: remark,
   };
 
   switch (action) {

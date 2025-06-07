@@ -27,6 +27,8 @@ export type OdApplication = {
   location: string;
   status: string;
   faculty?: { name: string };
+  facultyRemark: string;
+  hodRemark: string;
 };
 
 export const getColumns = (
@@ -53,7 +55,7 @@ export const getColumns = (
     cell: ({ row }) => (
       <div
         style={{
-          whiteSpace: "normal", 
+          whiteSpace: "normal",
           wordBreak: "break-word",
           maxWidth: "500px",
         }}
@@ -70,6 +72,46 @@ export const getColumns = (
     accessorKey: "faculty",
     header: "Applied To",
     cell: ({ row }) => row.original.faculty?.name || "N/A",
+  },
+  {
+    accessorKey: "facultyRemark",
+    header: "Faculty Remark",
+    cell: ({ row }) => {
+      const remark = row.original.facultyRemark;
+      return remark ? (
+        <div
+          style={{
+            whiteSpace: "normal",
+            wordBreak: "break-word",
+            maxWidth: "300px",
+          }}
+        >
+          {remark}
+        </div>
+      ) : (
+        <em>-</em>
+      );
+    },
+  },
+  {
+    accessorKey: "hodRemark",
+    header: "HOD Remark",
+    cell: ({ row }) => {
+      const remark = row.original.hodRemark;
+      return remark ? (
+        <div
+          style={{
+            whiteSpace: "normal",
+            wordBreak: "break-word",
+            maxWidth: "300px",
+          }}
+        >
+          {remark}
+        </div>
+      ) : (
+        <em>-</em>
+      );
+    },
   },
   {
     id: "status",

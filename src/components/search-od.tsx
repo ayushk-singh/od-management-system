@@ -25,6 +25,8 @@ type OdApplication = {
   status: string;
   faculty?: { name: string };
   student?: { registerNo: string };
+  facultyRemark?: string | null;
+  hodRemark?: string | null;
 };
 
 const PAGE_SIZE = 10;
@@ -112,7 +114,7 @@ export default function SearchOd() {
         <Button onClick={handleSearch}>Search</Button>
       </div>
 
-      {loading && <DataFetchLoader/>}
+      {loading && <DataFetchLoader />}
       {error && <p className="text-red-600">{error}</p>}
       {!loading &&
         !error &&
@@ -132,6 +134,8 @@ export default function SearchOd() {
                   <TableHead className="text-white">Location</TableHead>
                   <TableHead className="text-white">Faculty</TableHead>
                   <TableHead className="text-white">Register No.</TableHead>
+                  <TableHead className="text-white">Faculty Remark</TableHead>
+                  <TableHead className="text-white">HOD Remark</TableHead>
                   <TableHead className="text-white">Status</TableHead>
                 </TableRow>
               </TableHeader>
@@ -147,6 +151,8 @@ export default function SearchOd() {
                     <TableCell>{od.location}</TableCell>
                     <TableCell>{od.faculty?.name || "N/A"}</TableCell>
                     <TableCell>{od.student?.registerNo || "N/A"}</TableCell>
+                    <TableCell>{od.facultyRemark || "-"}</TableCell>
+                    <TableCell>{od.hodRemark || "-"}</TableCell>
                     <TableCell>
                       <Badge
                         className={

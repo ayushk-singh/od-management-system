@@ -1,6 +1,8 @@
+// app/api/od/faculty/faculty-stats/route.ts
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma"; 
 import { auth } from "@clerk/nextjs/server"; 
+import { statsCache } from "@/lib/cache";
 
 export async function GET() {
   const { userId } = await auth();
@@ -9,41 +11,44 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const cacheKey = `faculty-stats-${userId}`;
+  const cached = statsCache.get(cacheKey);
+  if (cached) {
+    return NextResponse.json(cached);
+  }
+
   try {
-    const approved = await prisma.oDApplication.count({
-      where: {
-        faculty: { clerkId: userId },
-        status: "APPROVED_BY_FACULTY",
-      },
-    });
+    const [approved, rejected, forwarded, pending] = await Promise.all([
+      prisma.oDApplication.count({
+        where: {
+          faculty: { clerkId: userId },
+          status: "APPROVED_BY_FACULTY",
+        },
+      }),
+      prisma.oDApplication.count({
+        where: {
+          faculty: { clerkId: userId },
+          status: "REJECTED_BY_FACULTY",
+        },
+      }),
+      prisma.oDApplication.count({
+        where: {
+          faculty: { clerkId: userId },
+          status: "FORWARDED_TO_HOD",
+        },
+      }),
+      prisma.oDApplication.count({
+        where: {
+          faculty: { clerkId: userId },
+          status: "PENDING",
+        },
+      }),
+    ]);
 
-    const rejected = await prisma.oDApplication.count({
-      where: {
-        faculty: { clerkId: userId },
-        status: "REJECTED_BY_FACULTY",
-      },
-    });
+    const result = { approved, rejected, forwarded, pending };
+    statsCache.set(cacheKey, result);
 
-    const forwarded = await prisma.oDApplication.count({
-      where: {
-        faculty: { clerkId: userId },
-        status: "FORWARDED_TO_HOD",
-      },
-    });
-
-    const pending = await prisma.oDApplication.count({
-      where: {
-        faculty: { clerkId: userId },
-        status: "PENDING",
-      },
-    });
-
-    return NextResponse.json({
-      approved,
-      rejected,
-      forwarded,
-      pending,
-    });
+    return NextResponse.json(result);
   } catch (err) {
     console.error("Failed to fetch faculty stats", err);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });

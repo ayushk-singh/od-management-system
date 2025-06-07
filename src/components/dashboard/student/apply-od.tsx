@@ -1,5 +1,3 @@
-//FIXME: multiple submission if done one after another
-
 "use client";
 
 import { z } from "zod";
@@ -49,7 +47,9 @@ const formSchema = z
     dateTo: z.date({ required_error: "End date is required." }),
     location: z.string().min(2),
     reason: z.string().min(10),
-    facultyId: z.string().min(1, { message: "Please select a faculty" }),
+    facultyId: z.string().refine((val) => val !== "Choose a faculty", {
+      message: "Please select a faculty",
+    }),
   })
   .refine((data) => data.dateTo >= data.dateFrom, {
     message: "End date must be after start date",
@@ -252,14 +252,18 @@ export function ApplyOd({
                   <FormLabel>Apply To (Faculty)</FormLabel>
                   <Select
                     onValueChange={field.onChange}
-                    defaultValue={field.value}
+                    value={field.value}
+                    defaultValue=""
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select faculty" />
+                        <SelectValue placeholder="Choose a faculty" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
+                      <SelectItem value="Choose a faculty" disabled>
+                        Choose a faculty
+                      </SelectItem>
                       {(faculties ?? []).map((faculty) => (
                         <SelectItem key={faculty.id} value={faculty.id}>
                           {faculty.name}
@@ -327,7 +331,10 @@ export function ApplyOd({
               variant="outline"
               onClick={() => {
                 if (odId) {
-                  window.open(`/api/od/utils/generate-od-pdf/${odId}`, "_blank");
+                  window.open(
+                    `/api/od/utils/generate-od-pdf/${odId}`,
+                    "_blank"
+                  );
                 }
               }}
             >

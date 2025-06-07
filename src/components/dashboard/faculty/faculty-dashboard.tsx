@@ -51,12 +51,12 @@ const data = {
   navSecondary: [
     {
       title: "Raise an issue",
-      url: "",
+      url: "mailto:omssupport@hicas.ac.in",
       icon: IconReport
     },
     {
       title: "Need Help",
-      url: "",
+      url: "/help",
       icon: IconHelpCircle
     }
   ]

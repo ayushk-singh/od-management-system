@@ -15,7 +15,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { Skeleton } from "@/components/ui/skeleton"
 import { useEffect, useState } from "react"
 
 export function FacultyODStats() {
@@ -94,10 +93,10 @@ export function FacultyODStats() {
           <CardHeader>
             <CardDescription>{card.label}</CardDescription>
             <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-              {loading ? <Skeleton className="h-6 w-14 rounded bg-secondary" /> : card.count}
+              {card.count}
             </CardTitle>
             <CardAction>
-              {loading ? <Skeleton className="h-6 w-24 rounded-full bg-secondary" /> : card.badge}
+              {card.badge}
             </CardAction>
           </CardHeader>
           <CardFooter className="flex-col items-start gap-1.5 text-sm text-muted-foreground">

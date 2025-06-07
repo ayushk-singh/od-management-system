@@ -60,26 +60,29 @@ model HOD {
 }
 
 model ODApplication {
-  id            String     @id @default(cuid())
-  studentId     String
-  facultyId     String
-  hodId         String?
-  status        ODStatus   @default(PENDING)
-  location      String
-  dateFrom      DateTime
-  dateTo        DateTime
-  totalDays     Int
-  reason        String
+  id                String     @id @default(cuid())
+  studentId         String
+  facultyId         String
+  hodId             String?
+  status            ODStatus   @default(PENDING)
+  location          String
+  dateFrom          DateTime
+  dateTo            DateTime
+  totalDays         Int
+  reason            String
 
-  student       Student    @relation("StudentODApplications", fields: [studentId], references: [id])
-  faculty       Faculty    @relation("FacultyReviewOD", fields: [facultyId], references: [id])
-  hod           HOD?       @relation("HODReviewOD", fields: [hodId], references: [id])
+  facultyRemark     String?
+  hodRemark         String?
+
+  student           Student    @relation("StudentODApplications", fields: [studentId], references: [id])
+  faculty           Faculty    @relation("FacultyReviewOD", fields: [facultyId], references: [id])
+  hod               HOD?       @relation("HODReviewOD", fields: [hodId], references: [id])
 
   facultyReviewedAt DateTime?
   hodReviewedAt     DateTime?
 
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
 
   @@index([studentId])
   @@index([facultyId])

@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import Link from "next/link"
+import * as React from "react";
+import Link from "next/link";
 import {
   IconChartBar,
   IconInnerShadowTop,
@@ -9,12 +9,12 @@ import {
   IconListDetails,
   IconDashboardFilled,
   IconReport,
-  IconHelpCircle
-} from "@tabler/icons-react"
+  IconHelpCircle,
+} from "@tabler/icons-react";
 
-import { NavMain } from "@/components/nav-main"
-import { NavUser } from "@/components/nav-user"
-import { NavSecondary } from "@/components/nav-secondary"
+import { NavMain } from "@/components/nav-main";
+import { NavUser } from "@/components/nav-user";
+import { NavSecondary } from "@/components/nav-secondary";
 import {
   Sidebar,
   SidebarContent,
@@ -23,14 +23,14 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
 
 const data = {
   navMain: [
     {
       title: "Dashboard",
       url: "/dashboard/hod",
-      icon: IconDashboardFilled
+      icon: IconDashboardFilled,
     },
     {
       title: "Manage Applications",
@@ -45,24 +45,26 @@ const data = {
     {
       title: "Search Application",
       url: "/dashboard/hod/search",
-      icon: IconSearch
-    }
+      icon: IconSearch,
+    },
   ],
   navSecondary: [
     {
       title: "Raise an issue",
-      url: "",
-      icon: IconReport
+      url: "/raise-an-issue",
+      icon: IconReport,
     },
     {
       title: "Need Help",
-      url: "",
-      icon: IconHelpCircle
-    }
-  ]
-}
+      url: "/help",
+      icon: IconHelpCircle,
+    },
+  ],
+};
 
-export function HodAppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export function HodAppSidebar({
+  ...props
+}: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -82,11 +84,11 @@ export function HodAppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavSecondary className="mt-auto" items={data.navSecondary}/>
+        <NavSecondary className="mt-auto" items={data.navSecondary} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser />
       </SidebarFooter>
     </Sidebar>
-  )
+  );
 }

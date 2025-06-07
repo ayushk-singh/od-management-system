@@ -7,10 +7,16 @@ import {
   getFilteredRowModel,
   flexRender,
 } from "@tanstack/react-table";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
@@ -30,6 +36,12 @@ export default function ManageApplications() {
   const [globalFilter, setGlobalFilter] = useState("");
   const [loading, setLoading] = useState(true);
 
+  const [remark, setRemark] = useState("");
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [actionType, setActionType] = useState<
+    "APPROVE" | "REJECT" | "FORWARD" | null
+  >(null);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -46,22 +58,34 @@ export default function ManageApplications() {
     fetchData();
   }, []);
 
-  const handleAction = async (id: string, action: "APPROVE" | "REJECT" | "FORWARD") => {
-    const res = await fetch(`/api/od/faculty/faculty-action/${id}`, {
+  const handleConfirmAction = async () => {
+    if (!selectedId || !actionType) return;
+
+    const res = await fetch(`/api/od/faculty/faculty-action/${selectedId}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action }),
+      body: JSON.stringify({ action: actionType, remark }),
     });
 
     if (res.ok) {
-      toast.success("Status Updated Successfully")
-      setData(prev => prev.map(app => app.id === id ? { ...app, status: `UPDATED_${action}` } : app));
+      toast.success("Status Updated Successfully");
+      setData((prev) =>
+        prev.map((app) =>
+          app.id === selectedId
+            ? { ...app, status: `UPDATED_${actionType}` }
+            : app
+        )
+      );
     } else {
       toast.error("Action failed");
     }
+
+    setSelectedId(null);
+    setActionType(null);
+    setRemark("");
   };
 
-  const columns: ColumnDef<FacultyOdApplication>[] = [
+  const columns = [
     { accessorKey: "student.name", header: "Student" },
     { accessorKey: "student.registerNo", header: "Reg. No." },
     { accessorKey: "reason", header: "Reason" },
@@ -69,12 +93,12 @@ export default function ManageApplications() {
     {
       accessorKey: "dateFrom",
       header: "From",
-      cell: ({ row }) => format(new Date(row.original.dateFrom), "PPP"),
+      cell: ({ row }: any) => format(new Date(row.original.dateFrom), "PPP"),
     },
     {
       accessorKey: "dateTo",
       header: "To",
-      cell: ({ row }) => format(new Date(row.original.dateTo), "PPP"),
+      cell: ({ row }: any) => format(new Date(row.original.dateTo), "PPP"),
     },
     {
       accessorKey: "status",
@@ -83,15 +107,41 @@ export default function ManageApplications() {
     {
       id: "actions",
       header: "Actions",
-      cell: ({ row }) => {
+      cell: ({ row }: any) => {
         const { id, status } = row.original;
         if (status !== "PENDING") return null;
 
         return (
           <div className="flex gap-2">
-            <Button size="sm" className="bg-accent hover:bg-accebt/70" onClick={() => handleAction(id, "APPROVE")}>Approve</Button>
-            <Button size="sm" className="bg-destructive hover:bg-destructive/70" onClick={() => handleAction(id, "REJECT")}>Reject</Button>
-            <Button size="sm" className="bg-primary hover:bg-primary/70" onClick={() => handleAction(id, "FORWARD")}>Forward to HOD</Button>
+            <Button
+              size="sm"
+              onClick={() => {
+                setSelectedId(id);
+                setActionType("APPROVE");
+              }}
+            >
+              Approve
+            </Button>
+
+            <Button
+              size="sm"
+              onClick={() => {
+                setSelectedId(id);
+                setActionType("REJECT");
+              }}
+            >
+              Reject
+            </Button>
+
+            <Button
+              size="sm"
+              onClick={() => {
+                setSelectedId(id);
+                setActionType("FORWARD");
+              }}
+            >
+              Forward to HOD
+            </Button>
           </div>
         );
       },
@@ -130,38 +180,68 @@ export default function ManageApplications() {
         </div>
       ) : (
         <div className="rounded-lg overflow-hidden border">
-        <Table>
-          <TableHeader className="bg-secondary">
-            {table.getHeaderGroups().map((group) => (
-              <TableRow key={group.id}>
-                {group.headers.map((header) => (
-                  <TableHead className="text-white" key={header.id}>
-                    {flexRender(header.column.columnDef.header, header.getContext())}
-                  </TableHead>
-                ))}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows.length > 0 ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id}>
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
+          <Table>
+            <TableHeader className="bg-secondary">
+              {table.getHeaderGroups().map((group) => (
+                <TableRow key={group.id}>
+                  {group.headers.map((header) => (
+                    <TableHead className="text-white" key={header.id}>
+                      {flexRender(
+                        header.column.columnDef.header,
+                        header.getContext()
+                      )}
+                    </TableHead>
                   ))}
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={columns.length} className="text-center py-8 text-muted-foreground">
-                  No Pending Application.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {table.getRowModel().rows.length > 0 ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow key={row.id}>
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="text-center py-8 text-muted-foreground"
+                  >
+                    No Pending Application.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+
+          {selectedId && actionType && (
+            <div className="p-4 border rounded-md space-y-2">
+              <p className="font-medium">Add remark for this action(optional):</p>
+              <Input
+                value={remark}
+                onChange={(e) => setRemark(e.target.value)}
+                placeholder="Enter remark..."
+              />
+              <div className="flex gap-2">
+                <Button onClick={handleConfirmAction}>Submit</Button>
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    setSelectedId(null);
+                    setActionType(null);
+                    setRemark("");
+                  }}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

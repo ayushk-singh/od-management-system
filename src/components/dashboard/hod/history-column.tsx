@@ -1,7 +1,7 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
 import { IconCheck, IconX, IconClock } from "@tabler/icons-react";
-import { cn } from "@/lib/utils"; 
+import { cn } from "@/lib/utils";
 import { ReactElement } from "react";
 
 export type HODHistoryRow = {
@@ -13,6 +13,7 @@ export type HODHistoryRow = {
   student: { name: string; registerNo: string };
   faculty: { name: string };
   hodReviewedAt: string;
+  hodRemark?: string | null;
   status: string;
 };
 
@@ -53,6 +54,11 @@ export const columns: ColumnDef<HODHistoryRow>[] = [
       row.original.hodReviewedAt
         ? format(new Date(row.original.hodReviewedAt), "PPPpp")
         : "-",
+  },
+  {
+    header: "Remark",
+    accessorKey: "hodRemark",
+    cell: ({ row }) => row.original.hodRemark || "-", 
   },
   {
     header: "Status",
