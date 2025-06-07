@@ -13,6 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import DataFetchLoader from "./data-fetch-loader";
 
 type OdApplication = {
   id: string;
@@ -29,6 +30,7 @@ type OdApplication = {
 const PAGE_SIZE = 10;
 
 export default function SearchOd() {
+  const [searchInput, setSearchInput] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [odList, setOdList] = useState<OdApplication[]>([]);
   const [loading, setLoading] = useState(false);
@@ -58,7 +60,7 @@ export default function SearchOd() {
       })
       .then((data) => {
         setOdList(data.odList);
-        setPageIndex(0); // Reset to page 1 on new search
+        setPageIndex(0);
       })
       .catch((err) => {
         if (err.name !== "AbortError") {
@@ -70,6 +72,10 @@ export default function SearchOd() {
 
     return () => controller.abort();
   }, [searchTerm]);
+
+  const handleSearch = () => {
+    setSearchTerm(searchInput);
+  };
 
   const getStatusBadgeClass = (status: string) => {
     switch (status) {
@@ -95,15 +101,18 @@ export default function SearchOd() {
 
   return (
     <div className="p-10">
-      <input
-        type="search"
-        placeholder="Search by OD ID or Register Number"
-        className="w-full border border-gray-300 rounded-md p-2 mb-4"
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-      />
+      <div className="flex items-center gap-2 mb-4">
+        <input
+          type="search"
+          placeholder="Search by OD ID or Register Number"
+          className="w-full border border-gray-300 rounded-md p-2"
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+        />
+        <Button onClick={handleSearch}>Search</Button>
+      </div>
 
-      {loading && <p>Loading...</p>}
+      {loading && <DataFetchLoader/>}
       {error && <p className="text-red-600">{error}</p>}
       {!loading &&
         !error &&

@@ -9,32 +9,30 @@ async function main() {
     },
   });
 
-
   await prisma.student.create({
     data: {
-      name: "Ayush Singh",
+      name: "Ayush",
       registerNo: "23BCA207",
       class: "III-BCA-C",
-      clerkId: "user_2yBOklDpyn7VyqXdt8Tk2KsQB34",
+      clerkId: "user_2y52PLo6i7JXf2JIgVCxsXezzWh",
       departmentId: dept.id,
     },
   });
 
-
   await prisma.faculty.create({
     data: {
-      name: "Faculty Surname",
+      name: "Jayalakshmi",
       email: "faculty@oms.com",
-      clerkId: "user_2yBOqJhSEskVvld5WA5AO7OxBBc",
+      clerkId: "user_2y52RoeJVuXkhagE6n4qAf73ogx",
       departmentId: dept.id,
     },
   });
 
   await prisma.hOD.create({
     data: {
-      name: "HOD surname",
+      name: "Dr. Verma",
       email: "hod@oms.com",
-      clerkId: "user_2yBOnQcbtpol45MoWk21UI5Bx3x",
+      clerkId: "user_2y52U9snZBM0Myq2t8bMvOneTwK",
       departmentId: dept.id,
     },
   });
