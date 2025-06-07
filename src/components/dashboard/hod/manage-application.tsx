@@ -51,7 +51,7 @@ export default function ManageApplicationsHOD() {
   };
 
   const handleReject = async (id: string) => {
-    const res = await fetch(`/api/od/hod-action/${id}`, {
+    const res = await fetch(`/api/od/hod/hod-action/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action: "REJECT" }),

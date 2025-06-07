@@ -9,6 +9,14 @@ import { useEffect, useState } from "react";
 import { differenceInDays, format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -57,6 +65,8 @@ export function ApplyOd({
   const [totalDays, setTotalDays] = useState<number | null>(null);
   const [status, setStatus] = useState<null | "success" | "error">(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [odId, setOdId] = useState<string | null>(null);
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -99,6 +109,8 @@ export function ApplyOd({
 
       if (res.ok && data.success) {
         setStatus("success");
+        setOdId(data.odApplication.id); // <-- Store OD ID
+        setShowSuccessDialog(true); // <-- Trigger Dialog
         form.reset();
         setTotalDays(null);
       } else {
@@ -112,190 +124,220 @@ export function ApplyOd({
   };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* From Date */}
-          <FormField
-            control={form.control}
-            name="dateFrom"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel>From Date</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
+    <>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* From Date */}
+            <FormField
+              control={form.control}
+              name="dateFrom"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>From Date</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "pl-3 text-left font-normal",
+                            !field.value && "text-muted-foreground"
+                          )}
+                        >
+                          {field.value ? (
+                            format(field.value, "PPP")
+                          ) : (
+                            <span>Pick a date</span>
+                          )}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent align="start" className="p-0">
+                      <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={field.onChange}
+                        disabled={(date) =>
+                          date < new Date(new Date().setHours(0, 0, 0, 0))
+                        }
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* To Date */}
+            <FormField
+              control={form.control}
+              name="dateTo"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>To Date</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "pl-3 text-left font-normal",
+                            !field.value && "text-muted-foreground"
+                          )}
+                        >
+                          {field.value ? (
+                            format(field.value, "PPP")
+                          ) : (
+                            <span>Pick a date</span>
+                          )}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent align="start" className="p-0">
+                      <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={field.onChange}
+                        disabled={(date) =>
+                          date <
+                          (form.getValues("dateFrom") ||
+                            new Date(new Date().setHours(0, 0, 0, 0)))
+                        }
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Total Days */}
+            <FormItem>
+              <FormLabel>Total Days</FormLabel>
+              <FormControl>
+                <Input
+                  disabled
+                  value={totalDays !== null ? totalDays.toString() : ""}
+                  placeholder="Calculated automatically"
+                />
+              </FormControl>
+              <FormDescription>Calculated based on date range</FormDescription>
+            </FormItem>
+
+            {/* Location */}
+            <FormField
+              control={form.control}
+              name="location"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Location of Event</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g., HICAS, Coimbatore" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Faculty to apply to */}
+            <FormField
+              control={form.control}
+              name="facultyId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Apply To (Faculty)</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
                     <FormControl>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "pl-3 text-left font-normal",
-                          !field.value && "text-muted-foreground"
-                        )}
-                      >
-                        {field.value ? (
-                          format(field.value, "PPP")
-                        ) : (
-                          <span>Pick a date</span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select faculty" />
+                      </SelectTrigger>
                     </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent align="start" className="p-0">
-                    <Calendar
-                      mode="single"
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      disabled={(date) =>
-                        date < new Date(new Date().setHours(0, 0, 0, 0))
-                      }
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+                    <SelectContent>
+                      {(faculties ?? []).map((faculty) => (
+                        <SelectItem key={faculty.id} value={faculty.id}>
+                          {faculty.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
 
-          {/* To Date */}
+          {/* Reason */}
           <FormField
             control={form.control}
-            name="dateTo"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel>To Date</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "pl-3 text-left font-normal",
-                          !field.value && "text-muted-foreground"
-                        )}
-                      >
-                        {field.value ? (
-                          format(field.value, "PPP")
-                        ) : (
-                          <span>Pick a date</span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent align="start" className="p-0">
-                    <Calendar
-                      mode="single"
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      disabled={(date) =>
-                        date <
-                        (form.getValues("dateFrom") ||
-                          new Date(new Date().setHours(0, 0, 0, 0)))
-                      }
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {/* Total Days */}
-          <FormItem>
-            <FormLabel>Total Days</FormLabel>
-            <FormControl>
-              <Input
-                disabled
-                value={totalDays !== null ? totalDays.toString() : ""}
-                placeholder="Calculated automatically"
-              />
-            </FormControl>
-            <FormDescription>Calculated based on date range</FormDescription>
-          </FormItem>
-
-          {/* Location */}
-          <FormField
-            control={form.control}
-            name="location"
+            name="reason"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Location of Event</FormLabel>
+                <FormLabel>Reason for OD</FormLabel>
                 <FormControl>
-                  <Input placeholder="e.g., HICAS, Coimbatore" {...field} />
+                  <Textarea
+                    placeholder="Please provide a detailed reason for the on-duty application..."
+                    className="min-h-[100px]"
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
 
-          {/* Faculty to apply to */}
-          <FormField
-            control={form.control}
-            name="facultyId"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Apply To (Faculty)</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select faculty" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {(faculties ?? []).map((faculty) => (
-                      <SelectItem key={faculty.id} value={faculty.id}>
-                        {faculty.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+          {/* TODO: make a pop up for success and failure with OD id and button to download application as pdf */}
 
-        {/* Reason */}
-        <FormField
-          control={form.control}
-          name="reason"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Reason for OD</FormLabel>
-              <FormControl>
-                <Textarea
-                  placeholder="Please provide a detailed reason for the on-duty application..."
-                  className="min-h-[100px]"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
+          {/* Status messages */}
+          {status === "success" && (
+            <p className="text-green-600 font-medium">
+              Your application has been submitted successfully.
+            </p>
           )}
-        />
+          {status === "error" && errorMessage && (
+            <p className="text-red-600 font-medium">Error: {errorMessage}</p>
+          )}
 
-        {/* TODO: make a pop up for success and failure with OD id and button to download application as pdf */}
-
-        {/* Status messages */}
-        {status === "success" && (
-          <p className="text-green-600 font-medium">
-            Your application has been submitted successfully.
-          </p>
-        )}
-        {status === "error" && errorMessage && (
-          <p className="text-red-600 font-medium">Error: {errorMessage}</p>
-        )}
-
-        <Button type="submit" className="w-full md:w-auto">
-          Submit OD Application
-        </Button>
-      </form>
-    </Form>
+          <Button type="submit" className="w-full md:w-auto">
+            Submit OD Application
+          </Button>
+        </form>
+      </Form>
+      <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="text-green-600">
+              OD Submitted Successfully!
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2">
+            <p>Your OD application has been submitted.</p>
+            <p className="font-medium">
+              OD ID: <span className="text-blue-600">{odId}</span>
+            </p>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                if (odId) {
+                  window.open(`/api/od/utils/generate-od-pdf/${odId}`, "_blank");
+                }
+              }}
+            >
+              Download PDF
+            </Button>
+            <Button onClick={() => setShowSuccessDialog(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
