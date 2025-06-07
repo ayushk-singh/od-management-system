@@ -50,6 +50,17 @@ export const getColumns = (
   {
     accessorKey: "reason",
     header: "Reason",
+    cell: ({ row }) => (
+      <div
+        style={{
+          whiteSpace: "normal", 
+          wordBreak: "break-word",
+          maxWidth: "500px",
+        }}
+      >
+        {row.original.reason}
+      </div>
+    ),
   },
   {
     accessorKey: "location",
@@ -60,41 +71,45 @@ export const getColumns = (
     header: "Applied To",
     cell: ({ row }) => row.original.faculty?.name || "N/A",
   },
- {
-  accessorKey: "status",
-  header: "Status",
-  cell: ({ row }) => {
-    const status = row.original.status;
+  {
+    id: "status",
+    header: "Status",
+    cell: ({ row }) => {
+      const status = row.original.status;
 
-    let variant: "outline" | "destructive" | "secondary" | "default" = "default";
-    let bgColorClass = "";
-    let IconComponent = null;
+      let variant: "outline" | "destructive" | "secondary" | "default" =
+        "default";
+      let bgColorClass = "";
+      let IconComponent = null;
 
-    if (status === "PENDING") {
-      variant = "outline";
-      bgColorClass = "bg-yellow-600 text-white";
-      IconComponent = IconClock;
-    } else if (status.includes("APPROVED")) {
-      variant = "outline";
-      bgColorClass = "bg-accent text-white";
-      IconComponent = IconCheck;
-    } else if (status.includes("REJECTED")) {
-      variant = "destructive";
-      bgColorClass = "";
-      IconComponent = IconX;
-    } else {
-      variant = "default";
-      IconComponent = null;
-    }
+      if (status === "PENDING") {
+        variant = "outline";
+        bgColorClass = "bg-yellow-600 text-white";
+        IconComponent = IconClock;
+      } else if (status.includes("APPROVED")) {
+        variant = "outline";
+        bgColorClass = "bg-accent text-white";
+        IconComponent = IconCheck;
+      } else if (status.includes("REJECTED")) {
+        variant = "destructive";
+        bgColorClass = "";
+        IconComponent = IconX;
+      } else {
+        variant = "default";
+        IconComponent = null;
+      }
 
-    return (
-      <Badge variant={variant} className={`${bgColorClass} font-semibold flex items-center gap-1`}>
-        {IconComponent && <IconComponent className="w-4 h-4" />}
-        {status}
-      </Badge>
-    );
+      return (
+        <Badge
+          variant={variant}
+          className={`${bgColorClass} font-semibold flex items-center gap-1`}
+        >
+          {IconComponent && <IconComponent className="w-4 h-4" />}
+          {status}
+        </Badge>
+      );
+    },
   },
-},
   {
     id: "actions",
     header: "Actions",
@@ -103,10 +118,19 @@ export const getColumns = (
       const status = row.original.status;
       const isPending = status === "PENDING";
 
+      const handleDownload = () => {
+        const url = `/api/od/utils/generate-od-pdf/${id}`;
+        window.open(url, "_blank", "noopener,noreferrer");
+      };
+
       return (
         <div className="flex gap-2">
           <Button size="sm" onClick={() => onEdit(id)} disabled={!isPending}>
             Edit
+          </Button>
+
+          <Button size="sm" onClick={handleDownload} variant="default">
+            Download
           </Button>
 
           <AlertDialog>

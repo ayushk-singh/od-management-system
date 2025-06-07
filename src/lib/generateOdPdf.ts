@@ -125,7 +125,7 @@ export async function generateODPDF(odData: any) {
 
   // === QR Code ===
   const qrDataUrl = await QRCode.toDataURL(
-    `https://yourdomain.com/verify/${odData.id}`
+    `http://localhost:3000/verify/${odData.id}`
   );
   const qrImageBytes = Buffer.from(qrDataUrl.split(",")[1], "base64");
   const qrImage = await pdfDoc.embedPng(qrImageBytes);

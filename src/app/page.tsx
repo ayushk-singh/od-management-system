@@ -4,6 +4,8 @@ import { useEffect } from "react";
 import { useAuth, useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import LandingPage from "@/components/aceternity/spotlight";
+import AppLoader from "@/components/app-loader";
+
 
 export default function Home() {
   const { isSignedIn } = useAuth();
@@ -27,7 +29,7 @@ export default function Home() {
   if (isSignedIn && user) {
     const role = user.publicMetadata?.role;
     if (role === "student" || role === "faculty" || role === "hod") {
-      return null;
+      return <AppLoader/>;
     }
   }
 
