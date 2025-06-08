@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import {
   useReactTable,
   getCoreRowModel,
@@ -19,7 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { toast } from "sonner";
-import { ColumnDef, Row } from "@tanstack/react-table";
+import { ColumnDef } from "@tanstack/react-table";
 import { Loader2 } from "lucide-react";
 
 type FacultyOdApplication = {
@@ -66,29 +66,21 @@ export default function ManageApplications() {
     }
   }, [selectedId]);
 
-  useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => {
-      if (!selectedId) return;
-      if (e.key === "Escape") cancelAction();
-      else if (e.key === "Enter" && !isSubmitDisabled()) handleConfirmAction();
-    };
-    window.addEventListener("keydown", handleKey);
-    return () => window.removeEventListener("keydown", handleKey);
-  }, [selectedId, remark, actionType]);
-
-  const isSubmitDisabled = () =>
-    (actionType === "REJECT" || actionType === "FORWARD")
-      ? remark.trim().length === 0 || submitting
-      : submitting;
-
-  const cancelAction = () => {
+  const cancelAction = useCallback(() => {
     setSelectedId(null);
     setActionType(null);
     setRemark("");
     setSubmitting(false);
-  };
+  }, []);
 
-  const handleConfirmAction = async () => {
+  const isSubmitDisabled = useCallback(() => {
+    if (actionType === "REJECT" || actionType === "FORWARD") {
+      return remark.trim().length === 0 || submitting;
+    }
+    return submitting;
+  }, [actionType, remark, submitting]);
+
+  const handleConfirmAction = useCallback(async () => {
     if (!selectedId || !actionType) return;
     setSubmitting(true);
 
@@ -111,7 +103,17 @@ export default function ManageApplications() {
     } finally {
       setSubmitting(false);
     }
-  };
+  }, [selectedId, actionType, remark, cancelAction]);
+
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (!selectedId) return;
+      if (e.key === "Escape") cancelAction();
+      else if (e.key === "Enter" && !isSubmitDisabled()) handleConfirmAction();
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [selectedId, cancelAction, isSubmitDisabled, handleConfirmAction]);
 
   const columns: ColumnDef<FacultyOdApplication>[] = [
     { accessorKey: "student.name", header: "Student" },
@@ -231,7 +233,10 @@ export default function ManageApplications() {
                 <TableRow key={group.id}>
                   {group.headers.map((header) => (
                     <TableHead className="text-white" key={header.id}>
-                      {flexRender(header.column.columnDef.header, header.getContext())}
+                      {flexRender(
+                        header.column.columnDef.header,
+                        header.getContext()
+                      )}
                     </TableHead>
                   ))}
                 </TableRow>
@@ -243,14 +248,20 @@ export default function ManageApplications() {
                   <TableRow key={row.id}>
                     {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id}>
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
                       </TableCell>
                     ))}
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={columns.length} className="text-center py-8 text-muted-foreground">
+                  <TableCell
+                    colSpan={columns.length}
+                    className="text-center py-8 text-muted-foreground"
+                  >
                     No Pending Application.
                   </TableCell>
                 </TableRow>
@@ -297,20 +308,13 @@ export default function ManageApplications() {
             </p>
 
             <div className="flex justify-end gap-3">
-              <Button
-                onClick={handleConfirmAction}
-                disabled={isSubmitDisabled()}
-              >
+              <Button onClick={handleConfirmAction} disabled={isSubmitDisabled()}>
                 {submitting ? (
                   <Loader2 className="animate-spin h-4 w-4 mr-2" />
                 ) : null}
                 Submit
               </Button>
-              <Button
-                variant="ghost"
-                onClick={cancelAction}
-                disabled={submitting}
-              >
+              <Button variant="ghost" onClick={cancelAction} disabled={submitting}>
                 Cancel
               </Button>
             </div>
