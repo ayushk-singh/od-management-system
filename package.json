@@ -13,7 +13,7 @@
     "generate:dev": "dotenv -e .env.local -- prisma generate",
     "seed:dev": "dotenv -e .env.local -- prisma db seed",
     "migrate:prod": "dotenv -e .env -- prisma migrate deploy",
-    "generate:prod": "dotenv -e .env -- prisma generate",
+    "generate:prod": "dotenv -e .env -- prisma generate --no-engine",
     "seed:prod": "dotenv -e .env -- prisma db seed"
   },
   "prisma": {

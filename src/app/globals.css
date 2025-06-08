@@ -114,9 +114,9 @@
   --sidebar-border: oklch(0.8452 0 0);
   --sidebar-ring: oklch(0.6582 0.1690 248.8135);
   --destructive-foreground: oklch(1.0000 0 0);
-  --font-sans: Inter;
+  /* --font-sans: Inter; */
   --font-serif: Merriweather;
-  --font-mono: Monaco;
+  /* --font-mono: Monaco; */
   --shadow-color: #000000;
   --shadow-opacity: 0.1;
   --shadow-blur: 8px;

@@ -48,6 +48,6 @@ export async function PUT(req: NextRequest) {
     });
     return NextResponse.json({ updated });
   } catch (error) {
-    return new Response("Failed to update OD application", { status: 500 });
+    return new Response(`Failed to update OD application: ${error}`, { status: 500 });
   }
 }

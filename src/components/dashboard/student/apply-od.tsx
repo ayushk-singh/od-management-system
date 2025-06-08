@@ -1,12 +1,13 @@
 "use client";
 
+import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { useEffect, useState } from "react";
 import { differenceInDays, format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+
 import {
   Dialog,
   DialogContent,
@@ -14,7 +15,6 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -25,11 +25,11 @@ import {
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -41,6 +41,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+// Schema
 const formSchema = z
   .object({
     dateFrom: z.date({ required_error: "Start date is required." }),
@@ -66,6 +67,7 @@ export function ApplyOd({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [odId, setOdId] = useState<string | null>(null);
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const [showErrorDialog, setShowErrorDialog] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -108,8 +110,8 @@ export function ApplyOd({
 
       if (res.ok && data.success) {
         setStatus("success");
-        setOdId(data.odApplication.id); // <-- Store OD ID
-        setShowSuccessDialog(true); // <-- Trigger Dialog
+        setOdId(data.odApplication.id);
+        setShowSuccessDialog(true);
         form.reset();
         setTotalDays(null);
       } else {
@@ -122,12 +124,18 @@ export function ApplyOd({
     }
   };
 
+  useEffect(() => {
+    if (status === "success" && errorMessage) {
+      setShowErrorDialog(true);
+    }
+  }, [status, errorMessage]);
+
   return (
     <>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* From Date */}
+            {/* Date From */}
             <FormField
               control={form.control}
               name="dateFrom"
@@ -144,11 +152,7 @@ export function ApplyOd({
                             !field.value && "text-muted-foreground"
                           )}
                         >
-                          {field.value ? (
-                            format(field.value, "PPP")
-                          ) : (
-                            <span>Pick a date</span>
-                          )}
+                          {field.value ? format(field.value, "PPP") : "Pick a date"}
                           <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                         </Button>
                       </FormControl>
@@ -158,9 +162,7 @@ export function ApplyOd({
                         mode="single"
                         selected={field.value}
                         onSelect={field.onChange}
-                        disabled={(date) =>
-                          date < new Date(new Date().setHours(0, 0, 0, 0))
-                        }
+                        disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
                         initialFocus
                       />
                     </PopoverContent>
@@ -170,7 +172,7 @@ export function ApplyOd({
               )}
             />
 
-            {/* To Date */}
+            {/* Date To */}
             <FormField
               control={form.control}
               name="dateTo"
@@ -187,11 +189,7 @@ export function ApplyOd({
                             !field.value && "text-muted-foreground"
                           )}
                         >
-                          {field.value ? (
-                            format(field.value, "PPP")
-                          ) : (
-                            <span>Pick a date</span>
-                          )}
+                          {field.value ? format(field.value, "PPP") : "Pick a date"}
                           <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                         </Button>
                       </FormControl>
@@ -203,8 +201,7 @@ export function ApplyOd({
                         onSelect={field.onChange}
                         disabled={(date) =>
                           date <
-                          (form.getValues("dateFrom") ||
-                            new Date(new Date().setHours(0, 0, 0, 0)))
+                          (form.getValues("dateFrom") || new Date(new Date().setHours(0, 0, 0, 0)))
                         }
                         initialFocus
                       />
@@ -243,18 +240,14 @@ export function ApplyOd({
               )}
             />
 
-            {/* Faculty to apply to */}
+            {/* Faculty */}
             <FormField
               control={form.control}
               name="facultyId"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Apply To (Faculty)</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    value={field.value}
-                    defaultValue=""
-                  >
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Choose a faculty" />
@@ -296,51 +289,49 @@ export function ApplyOd({
             )}
           />
 
-          {/* TODO: make a pop up for success and failure with OD id and button to download application as pdf */}
-
-          {/* Status messages */}
-          {status === "success" && (
-            <p className="text-green-600 font-medium">
-              Your application has been submitted successfully.
-            </p>
-          )}
-          {status === "error" && errorMessage && (
-            <p className="text-red-600 font-medium">Error: {errorMessage}</p>
-          )}
-
-          <Button type="submit" className="w-full md:w-auto">
-            Submit OD Application
+          <Button type="submit" className="w-full md:w-auto" disabled={form.formState.isSubmitting}>
+            {form.formState.isSubmitting && (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            )}
+            {form.formState.isSubmitting ? "Submitting..." : "Submit OD Application"}
           </Button>
         </form>
       </Form>
+
+      {/* Success Dialog */}
       <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle className="text-green-600">
-              OD Submitted Successfully!
-            </DialogTitle>
+            <DialogTitle className="text-green-600">OD Submitted Successfully!</DialogTitle>
           </DialogHeader>
           <div className="space-y-2">
             <p>Your OD application has been submitted.</p>
-            <p className="font-medium">
-              OD ID: <span className="text-blue-600">{odId}</span>
-            </p>
+            <p className="font-medium">OD ID: <span className="text-blue-600">{odId}</span></p>
           </div>
           <DialogFooter>
             <Button
               variant="outline"
-              onClick={() => {
-                if (odId) {
-                  window.open(
-                    `/api/od/utils/generate-od-pdf/${odId}`,
-                    "_blank"
-                  );
-                }
-              }}
+              onClick={() => odId && window.open(`/api/od/utils/generate-od-pdf/${odId}`, "_blank")}
             >
               Download PDF
             </Button>
             <Button onClick={() => setShowSuccessDialog(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Error Dialog */}
+      <Dialog open={showErrorDialog} onOpenChange={setShowErrorDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="text-destructive">Failed to Submit OD</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2">
+            <p>There was a problem while submitting your application.</p>
+            <p className="font-medium text-destructive">{errorMessage}</p>
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setShowErrorDialog(false)}>Close</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

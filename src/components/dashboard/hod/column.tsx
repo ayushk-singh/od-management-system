@@ -16,7 +16,8 @@ export type HODApplication = {
 
 export const getColumns = (
   onApprove: (id: string) => void,
-  onReject: (id: string) => void
+  onReject: (id: string) => void,
+  disabledId: string | null
 ): ColumnDef<HODApplication>[] => [
   {
     accessorKey: "student",
@@ -54,10 +55,20 @@ export const getColumns = (
       const id = row.original.id;
       return (
         <div className="flex gap-2">
-          <Button size="sm" onClick={() => onApprove(id)}>
+          <Button
+            size="sm"
+            className="bg-accent"
+            onClick={() => onApprove(id)}
+            disabled={disabledId !== null}
+          >
             Approve
           </Button>
-          <Button variant="destructive" size="sm" onClick={() => onReject(id)}>
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() => onReject(id)}
+            disabled={disabledId !== null}
+          >
             Reject
           </Button>
         </div>

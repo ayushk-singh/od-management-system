@@ -23,7 +23,6 @@ export function HODODStats() {
     pending: 0,
   });
 
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -35,8 +34,6 @@ export function HODODStats() {
         }
       } catch (err) {
         console.error("Failed to fetch HOD stats:", err);
-      } finally {
-        setLoading(false);
       }
     };
     fetchStats();

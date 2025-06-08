@@ -7,6 +7,7 @@ import {
   getFilteredRowModel,
   flexRender,
 } from "@tanstack/react-table";
+import { Loader2 } from "lucide-react";
 import { getColumns, HODApplication } from "./column";
 import {
   Table,
@@ -18,7 +19,8 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";  // <-- import Button
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 
 export default function ManageApplicationsHOD() {
@@ -26,10 +28,10 @@ export default function ManageApplicationsHOD() {
   const [loading, setLoading] = useState(true);
   const [globalFilter, setGlobalFilter] = useState("");
 
-  // For handling remark input
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [actionType, setActionType] = useState<"APPROVE" | "REJECT" | null>(null);
   const [remark, setRemark] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -41,9 +43,10 @@ export default function ManageApplicationsHOD() {
     fetchData();
   }, []);
 
-  // Handle submit of approve/reject with remark
   const handleConfirmAction = async () => {
     if (!selectedId || !actionType) return;
+
+    setSubmitting(true);
 
     const res = await fetch(`/api/od/hod/hod-action/${selectedId}`, {
       method: "PUT",
@@ -58,13 +61,12 @@ export default function ManageApplicationsHOD() {
       toast.error(`Unable to ${actionType === "APPROVE" ? "Approve" : "Reject"}, Try again later`);
     }
 
-    // Reset remark modal state
+    setSubmitting(false);
     setSelectedId(null);
     setActionType(null);
     setRemark("");
   };
 
-  // Instead of direct handlers, now only set id + action to trigger remark input
   const startAction = (id: string, action: "APPROVE" | "REJECT") => {
     setSelectedId(id);
     setActionType(action);
@@ -72,7 +74,8 @@ export default function ManageApplicationsHOD() {
 
   const columns = getColumns(
     (id) => startAction(id, "APPROVE"),
-    (id) => startAction(id, "REJECT")
+    (id) => startAction(id, "REJECT"),
+    selectedId 
   );
 
   const table = useReactTable({
@@ -132,10 +135,7 @@ export default function ManageApplicationsHOD() {
                 <TableRow key={row.id}>
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}
                 </TableRow>
@@ -154,32 +154,48 @@ export default function ManageApplicationsHOD() {
         </Table>
       </div>
 
-      {/* Remark input modal/section */}
-      {selectedId && actionType && (
-        <div className="p-4 border rounded-md space-y-2 max-w-md">
-          <p className="font-medium">
-            Add remark for {actionType === "APPROVE" ? "approval" : "rejection"} (optional):
-          </p>
-          <Input
-            value={remark}
-            onChange={(e) => setRemark(e.target.value)}
-            placeholder="Enter remark..."
-          />
-          <div className="flex gap-2">
-            <Button onClick={handleConfirmAction}>Submit</Button>
-            <Button
-              variant="ghost"
-              onClick={() => {
-                setSelectedId(null);
-                setActionType(null);
-                setRemark("");
-              }}
-            >
-              Cancel
-            </Button>
+      {/* Modal for remarks */}
+      <Dialog open={!!selectedId && !!actionType} onOpenChange={(open) => {
+        if (!open) {
+          setSelectedId(null);
+          setActionType(null);
+          setRemark("");
+        }
+      }}>
+        <DialogContent className="backdrop-blur-md">
+          <DialogHeader>
+            <DialogTitle>{actionType === "APPROVE" ? "Approve" : "Reject"} Application</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Input
+              value={remark}
+              onChange={(e) => setRemark(e.target.value)}
+              maxLength={50}
+              placeholder="Enter remark (optional)"
+            />
+            <p className="text-sm text-muted-foreground">{remark.length}/50 characters</p>
+            <div className="flex justify-end gap-2">
+              <Button onClick={handleConfirmAction} disabled={submitting}>
+                {submitting ? (
+                  <Loader2 className="animate-spin h-4 w-4 mr-2" />
+                ) : null}
+                Submit
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setSelectedId(null);
+                  setActionType(null);
+                  setRemark("");
+                }}
+                disabled={submitting}
+              >
+                Cancel
+              </Button>
+            </div>
           </div>
-        </div>
-      )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

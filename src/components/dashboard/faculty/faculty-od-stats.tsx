@@ -24,7 +24,6 @@ export function FacultyODStats() {
     forwarded: 0,
     pending: 0,
   });
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -36,8 +35,6 @@ export function FacultyODStats() {
         }
       } catch (err) {
         console.error("Failed to fetch faculty stats:", err);
-      } finally {
-        setLoading(false);
       }
     };
     fetchStats();
