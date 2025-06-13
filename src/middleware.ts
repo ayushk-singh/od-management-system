@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 const isStudentRoute = createRouteMatcher(["/dashboard/student(.*)"]);
 const isFacultyRoute = createRouteMatcher(["/dashboard/faculty(.*)"]);
 const isHodRoute = createRouteMatcher(["/dashboard/hod(.*)"]);
+const isAdminRoute = createRouteMatcher(["/admin(.*)"])
 
 export default clerkMiddleware(async (auth, req) => {
   try {
@@ -33,6 +34,12 @@ export default clerkMiddleware(async (auth, req) => {
       );
     }
 
+    if (isAdminRoute(req) && role !== "admin") {
+      return NextResponse.redirect(
+        new URL("/unauthorized", req.nextUrl.origin)
+      );
+    }
+
     return NextResponse.next();
   } catch (error) {
     console.error("Middleware error:", error);
@@ -41,5 +48,5 @@ export default clerkMiddleware(async (auth, req) => {
 });
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/api/:path*"],
+  matcher: ["/dashboard/:path*", "/admin/:path*","/api/:path*"],
 };

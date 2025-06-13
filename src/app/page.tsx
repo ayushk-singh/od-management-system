@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import LandingPage from "@/components/aceternity/spotlight";
 import AppLoader from "@/components/app-loader";
 
-
 export default function Home() {
   const { isSignedIn } = useAuth();
   const { user } = useUser();
@@ -23,13 +22,15 @@ export default function Home() {
       router.push("/dashboard/faculty");
     } else if (role === "hod") {
       router.push("/dashboard/hod");
+    } else if (role === "admin") {
+      router.push("/admin");
     }
   }, [isSignedIn, user, router]);
 
   if (isSignedIn && user) {
     const role = user.publicMetadata?.role;
-    if (role === "student" || role === "faculty" || role === "hod") {
-      return <AppLoader/>;
+    if (role === "student" || role === "faculty" || role === "hod" || role === "admin") {
+      return <AppLoader />;
     }
   }
 
