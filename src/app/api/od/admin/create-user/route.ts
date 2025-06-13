@@ -1,7 +1,6 @@
 // src/app/api/od/admin/create-user/route.ts
 import { clerkClient } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
-import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 
 export async function POST(req: Request) {
   try {
@@ -17,20 +16,9 @@ export async function POST(req: Request) {
       className,
     } = await req.json();
 
-    if (!email) {
-      return new Response(
-        JSON.stringify({ error: "Email is required." }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
-      );
-    }
+    const client = await clerkClient();
 
     if (role === "hod") {
-      if (!departmentId) {
-        return new Response(
-          JSON.stringify({ error: "DepartmentId is required for HOD." }),
-          { status: 400, headers: { "Content-Type": "application/json" } }
-        );
-      }
       const existing = await prisma.hOD.findUnique({ where: { departmentId } });
       if (existing) {
         return new Response(
@@ -41,9 +29,7 @@ export async function POST(req: Request) {
     }
 
     // 1️⃣ Create user in Clerk with full name
-    const client = await clerkClient();
-
-    const user = await client.users.createUser({ 
+    const user = await client.users.createUser({
       emailAddress: [email],
       password,
       skipPasswordChecks: true,
@@ -56,53 +42,55 @@ export async function POST(req: Request) {
 
     // 2️⃣ Store in your own DB
     if (role === "student") {
-      if (!registerNo || !className || !departmentId) {
-        return new Response(
-          JSON.stringify({ error: "Missing fields for Student." }),
-          { status: 400, headers: { "Content-Type": "application/json" } }
-        );
-      }
-      await prisma.student.create({ data: { clerkId, name: name ?? `${firstName} ${lastName}`, registerNo, class: className, departmentId } });
+      await prisma.student.create({
+        data: {
+          clerkId,
+          name: name ?? `${firstName} ${lastName}`,
+          registerNo: registerNo!,
+          class: className!,
+          departmentId: departmentId!,
+        },
+      });
     } else if (role === "faculty") {
-      if (!departmentId) {
-        return new Response(
-          JSON.stringify({ error: "DepartmentId is required for Faculty." }),
-          { status: 400, headers: { "Content-Type": "application/json" } }
-        );
-      }
-      await prisma.faculty.create({ data: { clerkId, name: name ?? `${firstName} ${lastName}`, email, departmentId } });
+      await prisma.faculty.create({
+        data: {
+          clerkId,
+          name: name ?? `${firstName} ${lastName}`,
+          email,
+          departmentId: departmentId!,
+        },
+      });
     } else if (role === "hod") {
-      if (!departmentId) {
-        return new Response(
-          JSON.stringify({ error: "DepartmentId is required for HOD." }),
-          { status: 400, headers: { "Content-Type": "application/json" } }
-        );
-      }
-      await prisma.hOD.create({ data: { clerkId, name: name ?? `${firstName} ${lastName}`, email, departmentId } });
+      await prisma.hOD.create({
+        data: {
+          clerkId,
+          name: name ?? `${firstName} ${lastName}`,
+          email,
+          departmentId: departmentId!,
+        },
+      });
+    }
+
+    return new Response(JSON.stringify({ message: "User created", user }), {
+      status: 201,
+      headers: { "Content-Type": "application/json" },
+    });
+  } catch (err: unknown) {
+    console.error("Clerk createUser error.", JSON.stringify(err, null, 2));
+
+    let details = "Unknown error";
+
+    if (err instanceof Error) {
+      details = err.message;
+    } else if (err && typeof err === "object" && "errors" in err) {
+      // If you know your error might have an `errors` field
+      // (depending on your application’s error structure)
+      details = (err as { errors: unknown }).errors as string;
     }
 
     return new Response(
-      JSON.stringify({ message: "User created successfully.", user }),
-      { status: 201, headers: { "Content-Type": "application/json" } }
+      JSON.stringify({ error: "Error creating user", details }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
     );
-  } catch (err) {
-    console.error("Clerk createUser error.", err);
-
-    if (err instanceof PrismaClientKnownRequestError) {
-      return new Response(
-        JSON.stringify({ error: "Prisma Error.", details: err.message }),
-        { status: 500, headers: { "Content-Type": "application/json" } }
-      );
-    } else if (err instanceof Error) {
-      return new Response(
-        JSON.stringify({ error: "Error creating user.", details: err.message }),
-        { status: 500, headers: { "Content-Type": "application/json" } }
-      );
-    } else {
-      return new Response(
-        JSON.stringify({ error: "Unknown Error.", details: String(err) }),
-        { status: 500, headers: { "Content-Type": "application/json" } }
-      );
-    }
   }
 }
