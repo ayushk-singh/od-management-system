@@ -64,7 +64,7 @@ export default function AdminCreateUserForm() {
         ...form,
         name: `${form.firstName} ${form.lastName}`, // fallback for database
       };
-      const res = await fetch("/api/od/admin/create-user", {
+      const res = await fetch("/api/od/admin/user/create-user", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

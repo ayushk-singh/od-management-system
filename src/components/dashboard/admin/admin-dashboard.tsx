@@ -4,11 +4,14 @@ import * as React from "react"
 import Link from "next/link"
 import {
   IconInnerShadowTop,
-  IconSearch,
-  IconListDetails,
+  IconUserPlus,
   IconDashboardFilled,
   IconReport,
-  IconHelpCircle
+  IconHelpCircle,
+  IconUser,
+  IconBuildingPlus,
+  IconBuilding,
+  IconNotes
 } from "@tabler/icons-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -34,17 +37,27 @@ const data = {
     {
       title: "Create User",
       url: "/admin/create-user",
-      icon: IconListDetails,
+      icon: IconUserPlus,
     },
     {
       title: "Create Department",
       url: "/admin/create-department",
-      icon: IconListDetails,
+      icon: IconBuildingPlus,
     },
     {
-      title: "Search Application",
-      url: "/dashboard/faculty/search",
-      icon: IconSearch
+      title: "Manage Users",
+      url: "/admin/manage-users",
+      icon: IconUser,
+    },
+    {
+      title: "Manage Departments",
+      url: "/admin/manage-department",
+      icon: IconBuilding,
+    },
+    {
+      title: "Manage OD",
+      url: "/admin/manage-od",
+      icon: IconNotes
     }
   ],
   navSecondary: [

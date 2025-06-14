@@ -1,4 +1,3 @@
-// src/app/api/od/admin/create-user/route.ts
 import { clerkClient } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 

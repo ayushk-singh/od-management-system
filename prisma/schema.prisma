@@ -17,7 +17,7 @@ enum ODStatus {
 }
 
 model Department {
-  id        String     @id @default(cuid())
+  id        String     @id @default(cuid()) 
   name      String     @unique
   students  Student[]
   faculties Faculty[]
@@ -25,43 +25,43 @@ model Department {
 }
 
 model Student {
-  id           String     @id @default(cuid())
+  id           String     @id @default(cuid()) 
   clerkId      String     @unique
   name         String
   registerNo   String     @unique
   class        String
   departmentId String
-  department   Department @relation(fields: [departmentId], references: [id])
-  odRequests   ODApplication[] @relation("StudentODApplications")
-  createdAt    DateTime   @default(now())
+  department   Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  odRequests   ODApplication[]
+  createdAt    DateTime   @default(now()) 
 }
 
 model Faculty {
-  id           String     @id @default(cuid())
+  id           String     @id @default(cuid()) 
   clerkId      String     @unique
   name         String
   email        String     @unique
   departmentId String
-  department   Department @relation(fields: [departmentId], references: [id])
-  odApplicationsToReview ODApplication[] @relation("FacultyReviewOD")
-  createdAt    DateTime   @default(now())
+  department   Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  odApplicationsToReview ODApplication[]
+  createdAt    DateTime   @default(now()) 
 }
 
 model HOD {
-  id           String     @id @default(cuid())
+  id           String     @id @default(cuid()) 
   clerkId      String     @unique
   name         String
   email        String     @unique
-  departmentId String     @unique // Only one HOD per department
-  department   Department @relation(fields: [departmentId], references: [id])
-  reviewedApplications ODApplication[] @relation("HODReviewOD")
-  createdAt    DateTime   @default(now())
+  departmentId String     @unique
+  department   Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  reviewedApplications ODApplication[]
+  createdAt    DateTime   @default(now()) 
 }
 
 model ODApplication {
-  id                String     @id @default(cuid())
+  id                String     @id @default(cuid()) 
   studentId         String
-  facultyId         String
+  facultyId         String?
   hodId             String?
   status            ODStatus   @default(PENDING)
   location          String
@@ -73,17 +73,17 @@ model ODApplication {
   facultyRemark     String?
   hodRemark         String?
 
-  student           Student    @relation("StudentODApplications", fields: [studentId], references: [id])
-  faculty           Faculty    @relation("FacultyReviewOD", fields: [facultyId], references: [id])
-  hod               HOD?       @relation("HODReviewOD", fields: [hodId], references: [id])
+  student           Student    @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  faculty           Faculty?   @relation(fields: [facultyId], references: [id], onDelete: SetNull)
+  hod               HOD?       @relation(fields: [hodId], references: [id], onDelete: SetNull)
 
   facultyReviewedAt DateTime?
   hodReviewedAt     DateTime?
 
-  createdAt         DateTime   @default(now())
+  createdAt         DateTime   @default(now()) 
   updatedAt         DateTime   @updatedAt
 
-  @@index([studentId])
-  @@index([facultyId])
-  @@index([hodId])
+  @@index([studentId]) 
+  @@index([facultyId]) 
+  @@index([hodId]) 
 }

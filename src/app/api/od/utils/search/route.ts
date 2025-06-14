@@ -29,22 +29,20 @@ export async function GET(request: Request) {
     ],
   };
 
-  // Add user-specific filter so they only see OD applications relevant to them
+  // Filter for student (so they see their own applications),
+  // or for faculty and HOD (so they see their department's applications).
   let userFilter = {};
 
   if (student) {
-    // Student sees only their own OD applications
     userFilter = { studentId: student.id };
   } else if (faculty) {
-    // Faculty sees OD applications assigned to them
-    userFilter = { facultyId: faculty.id };
+    userFilter = { student: { departmentId: faculty.departmentId } };
   } else if (hod) {
-    // HOD sees OD applications assigned to them
-    userFilter = { hodId: hod.id };
+    userFilter = { student: { departmentId: hod.departmentId } };
   }
 
   try {
-    const odList = await prisma.oDApplication.findMany({
+    const odList = await prisma.oDApplication.findMany({ 
       where: {
         AND: [baseFilter, userFilter],
       },
@@ -58,7 +56,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ odList });
   } catch (error) {
-    console.error("Error fetching OD applications:", error);
+    console.error("Error fetching OD applications.", error);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
