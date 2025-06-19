@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useAuth, useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
-import LandingPage from "@/components/aceternity/spotlight";
+import {Landing} from "@/components/landing/landing";
 import AppLoader from "@/components/app-loader";
 
 export default function Home() {
@@ -34,5 +34,5 @@ export default function Home() {
     }
   }
 
-  return <LandingPage />;
+  return <Landing />;
 }

@@ -85,28 +85,30 @@ export default function MyApplications() {
   };
 
   const handleEditSubmit = async (updated: OdApplication) => {
-  try {
-    const res = await fetch(`/api/od/student/update-od/${updated.id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(updated),
-    });
+    try {
+      const res = await fetch(`/api/od/student/update-od/${updated.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updated),
+      });
 
-    if (!res.ok) {
-      throw new Error("Failed to update OD application");
+      if (!res.ok) {
+        throw new Error("Failed to update OD application");
+      }
+
+      const data = await res.json();
+
+      setData((prev) =>
+        prev.map((d) => (d.id === updated.id ? data.updated : d))
+      );
+      setEditDialogOpen(false);
+      toast.success("OD application updated successfully!");
+    } catch (error) {
+      toast.error(
+        `Failed to update OD application. Please try again. Erro: ${error}`
+      );
     }
-
-    const data = await res.json();
-
-    setData((prev) =>
-      prev.map((d) => (d.id === updated.id ? data.updated : d))
-    );
-    setEditDialogOpen(false);
-    toast.success("OD application updated successfully!");
-  } catch (error) {
-    toast.error(`Failed to update OD application. Please try again. Erro: ${error}`);
-  }
-};
+  };
 
   const filteredData = data.filter((row) =>
     JSON.stringify(row).toLowerCase().includes(globalFilter.toLowerCase())
@@ -147,33 +149,60 @@ export default function MyApplications() {
           className="max-w-sm"
         />
 
-        <Table className="border rounded-md">
-          <TableHeader className="bg-secondary">
-            {table.getHeaderGroups().map((hg) => (
-              <TableRow key={hg.id}>
-                {hg.headers.map((header) => (
-                  <TableHead key={header.id}>
-                    {flexRender(
-                      header.column.columnDef.header,
-                      header.getContext()
-                    )}
-                  </TableHead>
-                ))}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows.map((row) => (
-              <TableRow key={row.id}>
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+        <div className="overflow-x-auto">
+          <Table className="border rounded-md min-w-full">
+            <TableHeader className="bg-secondary">
+              {table.getHeaderGroups().map((hg) => (
+                <TableRow key={hg.id}>
+                  {hg.headers.map((header) => (
+                    <TableHead
+                      key={header.id}
+                      className={
+                        header.id === "id"
+                          ? "w-[80px]"
+                          : header.id === "dateFrom" || header.id === "dateTo"
+                          ? "w-[120px]"
+                          : header.id === "reason"
+                          ? "w-[200px]"
+                          : header.id === "location"
+                          ? "w-[120px]"
+                          : header.id === "faculty"
+                          ? "w-[120px]"
+                          : header.id === "facultyRemark" ||
+                            header.id === "hodRemark"
+                          ? "w-[150px]"
+                          : header.id === "status"
+                          ? "w-[120px]"
+                          : header.id === "actions"
+                          ? "w-[180px]"
+                          : "w-auto"
+                      }
+                    >
+                      {flexRender(
+                        header.column.columnDef.header,
+                        header.getContext()
+                      )}
+                    </TableHead>
+                  ))}
+                </TableRow>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {table.getRowModel().rows.map((row) => (
+                <TableRow key={row.id}>
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
 
         {/* Pagination Controls */}
         <div className="flex items-center justify-between pt-4">

@@ -5,6 +5,7 @@ import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { IconCheck, IconClock, IconX } from "@tabler/icons-react";
+import { useState } from "react";
 
 import {
   AlertDialog,
@@ -52,17 +53,28 @@ export const getColumns = (
   {
     accessorKey: "reason",
     header: "Reason",
-    cell: ({ row }) => (
-      <div
-        style={{
-          whiteSpace: "normal",
-          wordBreak: "break-word",
-          maxWidth: "500px",
-        }}
-      >
-        {row.original.reason}
-      </div>
-    ),
+    cell: ({ row }) => {
+      const [expanded, setExpanded] = useState(false);
+      return (
+        <div className="max-w-[200px]">
+          <div
+            className={
+              expanded ? "whitespace-normal text-sm" : "truncate text-sm"
+            }
+          >
+            {row.original.reason}
+          </div>
+          {row.original.reason.length > 50 && (
+            <button
+              onClick={() => setExpanded(!expanded)}
+              className="text-xs text-blue-500 hover:text-blue-700 mt-1 font-medium"
+            >
+              {expanded ? "Show Less" : "Show More"}
+            </button>
+          )}
+        </div>
+      );
+    },
   },
   {
     accessorKey: "location",
@@ -77,19 +89,29 @@ export const getColumns = (
     accessorKey: "facultyRemark",
     header: "Faculty Remark",
     cell: ({ row }) => {
+      const [expanded, setExpanded] = useState(false);
       const remark = row.original.facultyRemark;
-      return remark ? (
-        <div
-          style={{
-            whiteSpace: "normal",
-            wordBreak: "break-word",
-            maxWidth: "300px",
-          }}
-        >
-          {remark}
+
+      if (!remark) return <em>-</em>;
+
+      return (
+        <div className="max-w-[150px]">
+          <div
+            className={
+              expanded ? "whitespace-normal text-sm" : "truncate text-sm"
+            }
+          >
+            {remark}
+          </div>
+          {remark.length > 30 && (
+            <button
+              onClick={() => setExpanded(!expanded)}
+              className="text-xs text-blue-500 hover:text-blue-700 mt-1 font-medium"
+            >
+              {expanded ? "Show Less" : "Show More"}
+            </button>
+          )}
         </div>
-      ) : (
-        <em>-</em>
       );
     },
   },
@@ -97,19 +119,29 @@ export const getColumns = (
     accessorKey: "hodRemark",
     header: "HOD Remark",
     cell: ({ row }) => {
+      const [expanded, setExpanded] = useState(false);
       const remark = row.original.hodRemark;
-      return remark ? (
-        <div
-          style={{
-            whiteSpace: "normal",
-            wordBreak: "break-word",
-            maxWidth: "300px",
-          }}
-        >
-          {remark}
+
+      if (!remark) return <em>-</em>;
+
+      return (
+        <div className="max-w-[150px]">
+          <div
+            className={
+              expanded ? "whitespace-normal text-sm" : "truncate text-sm"
+            }
+          >
+            {remark}
+          </div>
+          {remark.length > 30 && (
+            <button
+              onClick={() => setExpanded(!expanded)}
+              className="text-xs text-blue-500 hover:text-blue-700 mt-1 font-medium"
+            >
+              {expanded ? "Show Less" : "Show More"}
+            </button>
+          )}
         </div>
-      ) : (
-        <em>-</em>
       );
     },
   },

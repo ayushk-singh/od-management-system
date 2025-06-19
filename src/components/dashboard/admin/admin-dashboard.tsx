@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import Link from "next/link"
+import * as React from "react";
+import Link from "next/link";
 import {
   IconInnerShadowTop,
   IconUserPlus,
@@ -11,12 +11,12 @@ import {
   IconUser,
   IconBuildingPlus,
   IconBuilding,
-  IconNotes
-} from "@tabler/icons-react"
+  IconNotes,
+} from "@tabler/icons-react";
 
-import { NavMain } from "@/components/nav-main"
-import { NavUser } from "@/components/nav-user"
-import { NavSecondary } from "@/components/nav-secondary"
+import { NavMain } from "@/components/nav-main";
+import { NavUser } from "@/components/nav-user";
+import { NavSecondary } from "@/components/nav-secondary";
 import {
   Sidebar,
   SidebarContent,
@@ -25,14 +25,14 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
 
 const data = {
   navMain: [
     {
       title: "Dashboard",
       url: "/admin",
-      icon: IconDashboardFilled
+      icon: IconDashboardFilled,
     },
     {
       title: "Create User",
@@ -57,24 +57,26 @@ const data = {
     {
       title: "Manage OD",
       url: "/admin/manage-od",
-      icon: IconNotes
-    }
+      icon: IconNotes,
+    },
   ],
   navSecondary: [
     {
       title: "Raise an issue",
       url: "mailto:omssupport@hicas.ac.in",
-      icon: IconReport
+      icon: IconReport,
     },
     {
       title: "Need Help",
       url: "/help",
-      icon: IconHelpCircle
-    }
-  ]
-}
+      icon: IconHelpCircle,
+    },
+  ],
+};
 
-export function AdminAppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export function AdminAppSidebar({
+  ...props
+}: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -94,11 +96,11 @@ export function AdminAppSidebar({ ...props }: React.ComponentProps<typeof Sideba
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-         <NavSecondary className="mt-auto" items={data.navSecondary}/>
+        <NavSecondary className="mt-auto" items={data.navSecondary} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser/>
+        <NavUser />
       </SidebarFooter>
     </Sidebar>
-  )
+  );
 }
