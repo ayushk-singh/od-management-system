@@ -4,7 +4,6 @@ import { generateODPDF } from "@/lib/generateOdPdf";
 import { getParamFromURL } from "@/lib/utils";
 import type { ODData } from "@/lib/generateOdPdf";
 
-
 export async function GET(req: NextRequest) {
   const id = getParamFromURL(req.url, "generate-od-pdf");
 
@@ -27,6 +26,9 @@ export async function GET(req: NextRequest) {
 
   if (!od) {
     return new NextResponse("OD not found", { status: 404 });
+  }
+  if (!od.faculty) {
+    return new NextResponse("Faculty not assigned to this OD or deleted kindly contact admin", { status: 500 });
   }
 
   const odDataForPdf: ODData = {

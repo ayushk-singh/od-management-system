@@ -44,11 +44,12 @@ export const HeroHeader = () => {
                 className="flex items-center space-x-2"
               >
                 <Image
-                  src="/hicas-logo.png"
-                  alt="HICAS Logo"
-                  width={50}
-                  height={50}
-                  className="h-10 w-auto"
+                  src="/aavedan-logo.png"
+                  alt="Aavedan Logo"
+                  width={300}
+                  height={300}
+                  className="h-20 w-auto"
+                  priority
                 />
               </Link>
 

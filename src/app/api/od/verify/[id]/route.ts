@@ -40,6 +40,9 @@ export async function GET(req: NextRequest) {
       { status: 404 }
     );
   }
+  if (!od.faculty) {
+    return new NextResponse("Faculty not assigned to this OD", { status: 500 });
+  }
 
   // Define valid statuses
   const validStatuses = ["APPROVED_BY_FACULTY", "APPROVED_BY_HOD"];
